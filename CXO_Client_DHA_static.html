@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Ecosystem Health Assessment — CXOntology</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+
+
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    /* LIGHT THEME — all colours converted from oklch dark-mode values to hex */
+    --bg:       #FFFFFF;                       /* page bg — warm cream */
+    --bg2:      #FAFBFE;                       /* card/surface bg */
+    --bg3:      #EAF0FF;                       /* tertiary surface, table headers */
+    --border:   rgba(2, 19, 51, 0.10);           /* primary border */
+    --text:     #021333;                       /* primary text */
+    --muted:    #5C6B8E;                       /* secondary text */
+    --accent:   #1E3FE3;                       /* brand purple — accessible on white */
+    --accent-deep: #122B9E;
+    --accent-l: rgba(30, 63, 227, 0.10);       /* light accent tint */
+    --critical-deep: #791F1F;                  /* red-800 */
+    --critical: #A32D2D;                       /* red-600 */
+    --low:      #993C1D;                       /* coral-600 — Underperform */
+    --medium:   #854F0B;                       /* amber-800 — Needs Work */
+    --high:     #3B6D11;                       /* green-600 — Competitive */
+    --undisco:  #8696BC;                       /* gray-600 */
+    --nav-h:    68px;
+    --sb-w:     260px;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family:'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:var(--bg); color:var(--text); min-height:100vh; -webkit-font-smoothing:antialiased; }
+  ::selection { background: #1E3FE3; color: #FFFFFF; }
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-track { background:#FAFBFE; }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+  /* ── Loader ── */
+  #loader {
+    position:fixed; inset:0; z-index:9999;
+    background:var(--bg);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+  }
+  #loader.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+  #loader-canvas { position:absolute; inset:0; width:100%; height:100%; }
+  .loader-content { position:relative; text-align:center; z-index:2; }
+  .loader-brand { font-size:13px; letter-spacing:0.3em; color:#1E3FE3; margin-bottom:18px; font-weight:600; text-transform:uppercase; }
+  .loader-logo { width:160px; height:auto; margin: 0 auto 22px; display:block; opacity:0.95; }
+  .loader-title { font-size:clamp(22px,4vw,32px); font-weight:600; letter-spacing:-0.02em; color:var(--text); margin-bottom:10px; }
+  .loader-sub   { font-size:13px; color:var(--muted); margin-bottom:32px; max-width:380px; }
+  .loader-bar   { width:240px; height:2px; background:var(--bg3); border-radius:2px; overflow:hidden; margin:0 auto; }
+  .loader-bar-fill { height:100%; background:var(--accent); width:0; animation: load-progress 2.6s ease forwards; }
+  .loader-status { font-size:11px; color:var(--muted); margin-top:14px; letter-spacing:0.06em; min-height:14px; }
+  @keyframes load-progress { 0%{width:0} 30%{width:40%} 65%{width:75%} 100%{width:100%} }
+
+  /* ── Tier highlight pulse (when arriving from a metric chip) ─────────── */
+  @keyframes tier-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(61, 91, 255, 0.55), 0 0 0 1px rgba(61, 91, 255, 0.55) inset; }
+    50%  { box-shadow: 0 0 0 8px rgba(61, 91, 255, 0.0),  0 0 0 1px rgba(61, 91, 255, 0.85) inset; }
+    100% { box-shadow: 0 0 0 0 rgba(61, 91, 255, 0.0),    0 0 0 1px rgba(61, 91, 255, 0.0)  inset; }
+  }
+  .tier-card { transition: border-color 0.25s ease, background 0.25s ease; }
+  .tier-card.is-highlighted { animation: tier-pulse 1.6s ease-out 2; border-color: var(--accent) !important; }
+
+  /* ── Inline unlock chip ──────────────────────────────────────────────── */
+  .unlock-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(61, 91, 255, 0.08);
+    border: 1px solid rgba(61, 91, 255, 0.22);
+    color: var(--accent);
+    border-radius: 99px;
+    padding: 2px 9px 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .unlock-chip:hover, .unlock-chip:focus-visible {
+    background: rgba(61, 91, 255, 0.18);
+    border-color: rgba(61, 91, 255, 0.55);
+    outline: none;
+  }
+  .unlock-chip:focus-visible { box-shadow: 0 0 0 2px rgba(61, 91, 255, 0.35); }
+  .unlock-chip-dot { width: 4px; height: 4px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .unlock-chip-arrow { transition: transform 0.15s ease; }
+  .unlock-chip:hover .unlock-chip-arrow { transform: translateX(2px); }
+
+  /* ── Tooltip on chip hover ───────────────────────────────────────────── */
+  .unlock-chip-wrap { position: relative; display: inline-block; }
+  .unlock-tip {
+    position: absolute; bottom: calc(100% + 8px); left: 0;
+    z-index: 50;
+    width: 260px; max-width: 80vw;
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(4px);
+    transition: opacity 0.14s ease, transform 0.14s ease;
+  }
+  .unlock-chip-wrap:hover .unlock-tip,
+  .unlock-chip-wrap:focus-within .unlock-tip { opacity: 1; transform: translateY(0); }
+  .unlock-tip::after {
+    content: ''; position: absolute; top: 100%; left: 14px;
+    border: 5px solid transparent; border-top-color: #FFFFFF;
+  }
+
+  /* ── Pillar unlock summary chip (compact, navigation, not promotional) ── */
+  .pillar-unlock-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 11.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    font-family: inherit;
+  }
+  .pillar-unlock-chip:hover, .pillar-unlock-chip:focus-visible {
+    background: rgba(61, 91, 255, 0.1);
+    border-color: rgba(61, 91, 255, 0.45);
+    outline: none;
+  }
+  .pillar-unlock-chip-count { color: var(--accent); font-weight: 700; }
+
+  @media print { #loader { display:none !important; } }
+
+  /* ── Unlock chips & tier cards ─────────────────────────────────────── */
+  .unlock-chip-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+  .unlock-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px 3px 8px;
+    background: rgba(30, 63, 227, 0.08);
+    border: 1px solid rgba(30, 63, 227, 0.28);
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #1E3FE3;
+    text-decoration: none;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  }
+  .unlock-chip:hover, .unlock-chip:focus-visible {
+    background: rgba(30, 63, 227, 0.14);
+    border-color: rgba(30, 63, 227, 0.55);
+    outline: none;
+  }
+  .unlock-chip:focus-visible {
+    box-shadow: 0 0 0 2px rgba(30, 63, 227, 0.30);
+  }
+  .unlock-chip-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: #1E3FE3;
+    flex-shrink: 0;
+  }
+  .unlock-chip-arrow { opacity: 0.7; flex-shrink: 0; }
+
+  .unlock-tip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    width: max-content;
+    max-width: 280px;
+    padding: 8px 11px;
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: #021333;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(4px);
+    transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+    pointer-events: none;
+    z-index: 50;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .unlock-chip:hover ~ .unlock-tip,
+  .unlock-chip:focus-visible ~ .unlock-tip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  @media (max-width: 700px) { .unlock-tip { display: none; } }
+
+  .pillar-unlock-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px 5px 6px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .pillar-unlock-chip:hover, .pillar-unlock-chip:focus-visible {
+    background: rgba(30, 63, 227, 0.08);
+    border-color: rgba(30, 63, 227, 0.45);
+    outline: none;
+  }
+  .pillar-unlock-chip-count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 22px; height: 18px; padding: 0 5px;
+    background: #1E3FE3;
+    color: white;
+    border-radius: 99px;
+    font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .tier-card { transition: box-shadow 0.3s, border-color 0.3s; }
+  .tier-card.is-pulsing {
+    border-color: rgba(30, 63, 227, 0.65) !important;
+    box-shadow:
+      0 0 0 1px rgba(30, 63, 227, 0.40),
+      0 0 0 6px rgba(30, 63, 227, 0.16),
+      0 0 24px rgba(30, 63, 227, 0.22);
+    animation: tierPulse 1.4s ease-out;
+  }
+  @keyframes tierPulse {
+    0%   { box-shadow: 0 0 0 1px rgba(30, 63, 227, 0), 0 0 0 0 rgba(30, 63, 227, 0.5), 0 0 0 rgba(30, 63, 227, 0); }
+    30%  { box-shadow: 0 0 0 1px rgba(30, 63, 227, 0.5), 0 0 0 8px rgba(30, 63, 227, 0.20), 0 0 28px rgba(30, 63, 227, 0.30); }
+    100% { box-shadow: 0 0 0 1px rgba(30, 63, 227, 0.40), 0 0 0 6px rgba(30, 63, 227, 0.16), 0 0 24px rgba(30, 63, 227, 0.22); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tier-card.is-pulsing { animation: none; }
+  }
+
+  /* Arrow nudge animation for page-redirect links */
+  @keyframes arrow-nudge {
+    0%, 100% { transform: translateX(0); }
+    50%      { transform: translateX(3px); }
+  }
+
+  /* ============ REPORT SELECTOR (header navigation) ============ */
+  .report-selector { position: relative; }
+  .report-selector-trigger {
+    display: inline-flex; flex-direction: column; align-items: center;
+    gap: 1px;
+    padding: 5px 16px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    line-height: 1;
+  }
+  .report-selector-trigger:hover, .report-selector.is-open .report-selector-trigger {
+    background: rgba(30, 63, 227, 0.05);
+    border-color: rgba(30, 63, 227, 0.10);
+  }
+  .report-selector-eyebrow {
+    font-family: 'IBM Plex Mono', 'SF Mono', Menlo, monospace;
+    font-size: 9.5px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    line-height: 1.2;
+    color: #1E3FE3;
+  }
+  .report-selector.is-cat-health .report-selector-eyebrow { color: #1E3FE3; }
+  .report-selector.is-cat-competitive .report-selector-eyebrow { color: #62195F; }
+  .report-selector.is-cat-trend .report-selector-eyebrow { color: #0F4C5C; }
+  .report-selector-name {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 13.5px; font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    margin-top: 3px;
+    white-space: nowrap;
+  }
+  .report-selector-chevron {
+    width: 0; height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid currentColor;
+    opacity: 0.5;
+    transition: transform 0.18s ease;
+  }
+  .report-selector.is-open .report-selector-chevron { transform: rotate(180deg); }
+  .report-selector-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    width: 280px;
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 6px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    z-index: 60;
+    box-shadow: 0 8px 32px rgba(2, 19, 51, 0.10);
+    text-align: left;
+  }
+  .report-selector.is-open .report-selector-dropdown {
+    opacity: 1; pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+  .report-selector-dropdown::before {
+    content: '';
+    position: absolute;
+    bottom: 100%; left: 50%; transform: translateX(-50%);
+    border: 7px solid transparent;
+    border-bottom-color: #FFFFFF;
+  }
+  .rs-cat {
+    position: relative;
+    display: flex; align-items: center;
+    padding: 11px 12px 11px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .rs-cat::before {
+    content: '';
+    position: absolute;
+    left: 9px; top: 13px; bottom: 13px;
+    width: 3px;
+    border-radius: 2px;
+  }
+  .rs-cat.health::before { background: #1E3FE3; }
+  .rs-cat.competitive::before { background: #62195F; }
+  .rs-cat.trend::before { background: linear-gradient(180deg, #0F4C5C 0%, #2D8C9E 100%); }
+  .rs-cat:hover, .rs-cat.is-active-cat { background: rgba(2, 19, 51, 0.04); }
+  .rs-cat.is-current { background: rgba(15, 76, 92, 0.06); }
+  .rs-cat.is-current.health { background: rgba(30, 63, 227, 0.06); }
+  .rs-cat.is-current.competitive { background: rgba(98, 25, 95, 0.06); }
+  .rs-cat-content { flex: 1; min-width: 0; }
+  .rs-cat-eyebrow {
+    font-family: 'IBM Plex Mono', 'SF Mono', Menlo, monospace;
+    font-size: 9px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    line-height: 1.2;
+  }
+  .rs-cat.health .rs-cat-eyebrow { color: #1E3FE3; }
+  .rs-cat.competitive .rs-cat-eyebrow { color: #62195F; }
+  .rs-cat.trend .rs-cat-eyebrow { color: #0F4C5C; }
+  .rs-cat-name {
+    font-size: 13px; font-weight: 600;
+    color: var(--text);
+    margin-top: 3px;
+    display: inline-flex; align-items: center; gap: 6px;
+    text-transform: none;
+    letter-spacing: -0.005em;
+  }
+  .rs-cat-arrow {
+    width: 16px; height: 16px;
+    flex-shrink: 0;
+    color: rgba(2, 19, 51, 0.30);
+  }
+  .rs-current-tag {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8.5px; font-weight: 500;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 2px 5px 1px;
+    border-radius: 3px;
+    background: rgba(15, 76, 92, 0.10);
+    color: #0F4C5C;
+  }
+  .rs-cat.health .rs-current-tag { background: rgba(30, 63, 227, 0.10); color: #1E3FE3; }
+  .rs-cat.competitive .rs-current-tag { background: rgba(98, 25, 95, 0.10); color: #62195F; }
+  .rs-cascade {
+    position: absolute;
+    left: 100%;
+  border-left: 8px solid transparent;
+  box-sizing: content-box;
+  
+    top: -8px;
+    width: 240px;
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 6px;
+    opacity: 0; pointer-events: none;
+    transform: translateX(-4px);
+    transition: opacity 0.16s ease, transform 0.16s ease;
+    box-shadow: 0 8px 32px rgba(2, 19, 51, 0.10);
+    z-index: 61;
+  }
+
+  .rs-cat:hover .rs-cascade,
+  .rs-cat.is-active-cat .rs-cascade,
+  .rs-cascade:hover {
+    opacity: 1; pointer-events: auto;
+    transform: translateX(0);
+  }
+  .rs-report {
+    display: flex; align-items: center; gap: 9px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    color: var(--text);
+    text-decoration: none;
+    transition: background 0.12s;
+    font-family: 'Outfit', sans-serif;
+    text-transform: none;
+    letter-spacing: -0.005em;
+  }
+  .rs-report:hover { background: rgba(2, 19, 51, 0.04); }
+  .rs-report.is-current {
+    background: rgba(30, 63, 227, 0.10);
+    color: #1E3FE3;
+    font-weight: 600;
+  }
+  .rs-cat.competitive .rs-report.is-current { background: rgba(98, 25, 95, 0.10); color: #62195F; }
+  .rs-cat.trend .rs-report.is-current { background: rgba(15, 76, 92, 0.10); color: #0F4C5C; }
+  .rs-report-check { width: 14px; height: 14px; flex-shrink: 0; color: currentColor; }
+  .rs-report-spacer { width: 14px; height: 14px; flex-shrink: 0; }
+  .rs-footer {
+    margin: 6px -6px -6px;
+    border-top: 1px solid rgba(2, 19, 51, 0.06);
+    padding: 6px;
+  }
+  .rs-back {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 12px;
+    border-radius: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px; font-weight: 500;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: background 0.12s, color 0.12s;
+  }
+  .rs-back:hover { background: rgba(2, 19, 51, 0.04); color: #1E3FE3; }
+  .rs-mobile-list { display: none; }
+  @media (max-width: 900px) {
+    .rs-cascade { display: none; }
+    .rs-cat::after {
+      content: '';
+      position: absolute;
+      right: 14px; top: 50%;
+      transform: translateY(-50%);
+      width: 0; height: 0;
+      border-left: 5px solid rgba(2, 19, 51, 0.30);
+      border-top: 4px solid transparent;
+      border-bottom: 4px solid transparent;
+    }
+    .rs-cat-arrow { display: none; }
+    .rs-cat.is-mobile-expanded::after { transform: translateY(-50%) rotate(90deg); }
+    .rs-cat.is-mobile-expanded + .rs-mobile-list { display: block; padding: 0 6px 6px 24px; }
+    .rs-mobile-list .rs-report { font-size: 12.5px; padding: 8px 12px; }
+    .report-selector-dropdown { width: 270px; }
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     INFO POPOVER — methodology disclosure (matches trend reports)
+     ────────────────────────────────────────────────────────── */
+  .info-pop {
+    position: relative;
+    display: inline-flex;
+    vertical-align: middle;
+  }
+  .info-icon {
+    width: 16px; height: 16px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: help;
+    margin-left: 6px;
+    background: rgba(30, 63, 227, 0.10);
+    color: var(--accent-deep);
+    border: 1px solid rgba(30, 63, 227, 0.25);
+    transition: all 0.15s ease;
+    padding: 0;
+    user-select: none;
+    position: relative;
+  }
+  .info-icon::before {
+    content: ''; position: absolute;
+    top: 3px; left: 50%; transform: translateX(-50%);
+    width: 2px; height: 2px; border-radius: 50%;
+    background: currentColor;
+  }
+  .info-icon::after {
+    content: ''; position: absolute;
+    top: 7px; left: 50%; transform: translateX(-50%);
+    width: 2px; height: 5px; border-radius: 1px;
+    background: currentColor;
+  }
+  .info-pop:hover .info-icon, .info-pop:focus-within .info-icon {
+    background: rgba(30, 63, 227, 0.18);
+    transform: scale(1.08);
+  }
+  .info-pop[data-type="caveat"] .info-icon {
+    background: rgba(98, 25, 95, 0.08); color: #62195F; border-color: rgba(98, 25, 95, 0.25);
+  }
+  .info-pop[data-type="confidence"] .info-icon {
+    background: rgba(133, 79, 11, 0.10); color: #854F0B; border-color: rgba(133, 79, 11, 0.30);
+  }
+  .info-pop[data-type="source"] .info-icon {
+    background: rgba(59, 109, 17, 0.10); color: #3B6D11; border-color: rgba(59, 109, 17, 0.30);
+  }
+
+  /* Smaller info-pop variant for inline use in tight spaces */
+  .info-pop-th {
+    display: inline-flex; vertical-align: middle;
+    margin-left: 4px;
+    position: relative; top: -1px;
+  }
+  .info-pop-th .info-icon {
+    width: 13px; height: 13px;
+    background: rgba(30, 63, 227, 0.08);
+    border-color: rgba(30, 63, 227, 0.18);
+  }
+  .info-pop-th .info-icon::before { top: 3px; width: 1.5px; height: 1.5px; }
+  .info-pop-th .info-icon::after { top: 6px; width: 1.5px; height: 4px; }
+
+  .info-bubble {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    z-index: 200;
+    width: 260px;
+    max-width: calc(100vw - 32px);
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px 12px;
+    box-shadow: 0 12px 32px rgba(2, 19, 51, 0.14);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.16s ease, transform 0.16s ease;
+    text-align: left;
+    text-transform: none;
+    letter-spacing: normal;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 400;
+    white-space: normal;
+  }
+  .info-bubble::before {
+    content: ''; position: absolute;
+    bottom: 100%; left: 50%; transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-bottom-color: #FFFFFF;
+  }
+  .info-pop:hover .info-bubble, .info-pop:focus-within .info-bubble {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+  /* Right-rail variant — anchor popup to right edge to avoid overflow */
+  .info-pop.is-rail .info-bubble {
+    left: auto; right: -8px;
+    transform: translateX(0) translateY(4px);
+  }
+  .info-pop.is-rail .info-bubble::before {
+    left: auto; right: 14px; transform: none;
+  }
+  .info-pop.is-rail:hover .info-bubble,
+  .info-pop.is-rail:focus-within .info-bubble {
+    transform: translateX(0) translateY(0);
+  }
+  .info-bubble-tag {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9.5px; font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding: 3px 8px 2px;
+    border-radius: 4px;
+    background: rgba(30, 63, 227, 0.10);
+    color: var(--accent-deep);
+  }
+  .info-pop[data-type="caveat"] .info-bubble-tag { background: rgba(98, 25, 95, 0.08); color: #62195F; }
+  .info-pop[data-type="confidence"] .info-bubble-tag { background: rgba(133, 79, 11, 0.10); color: #854F0B; }
+  .info-pop[data-type="source"] .info-bubble-tag { background: rgba(59, 109, 17, 0.10); color: #3B6D11; }
+  .info-bubble-title {
+    font-size: 13px; font-weight: 600; color: var(--text);
+    margin-bottom: 7px; line-height: 1.35; letter-spacing: -0.015em;
+  }
+  .info-bubble-body {
+    font-size: 12.5px; color: var(--muted);
+    line-height: 1.55; margin: 0;
+  }
+  .info-bubble-cta {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--accent); text-decoration: none;
+    padding-top: 11px; margin-top: 11px;
+    border-top: 1px solid var(--border); width: 100%; cursor: pointer;
+  }
+  .info-bubble-cta:hover { color: var(--accent-deep); }
+</style>
+<style id="static-report-css">
+.static-report-shell{background:#fff;color:#021333;font-family:'Outfit',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.5}.static-topbar{position:sticky;top:0;z-index:20;height:68px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;padding:0 32px;background:rgba(234,240,255,.92);border-bottom:1px solid rgba(30,63,227,.12)}.static-brand{font-weight:700;color:#021333;text-decoration:none}.static-report-title{text-align:center}.static-report-title span,.static-kicker{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#1E3FE3}.static-report-title strong{font-size:14px}.static-contact{justify-self:end;background:#1E3FE3;color:#fff;text-decoration:none;border-radius:999px;padding:9px 16px;font-size:13px;font-weight:600}.static-sidebar{position:fixed;top:88px;left:24px;width:220px;display:flex;flex-direction:column;gap:4px}.static-nav-link{color:#5C6B8E;text-decoration:none;font-size:13px;padding:8px 10px;border-radius:6px}.static-nav-link:hover{background:#EAF0FF;color:#1E3FE3}.static-main{max-width:980px;margin:0 auto;padding:42px 32px 64px}.static-hero{text-align:center;padding:36px 0 38px;border-bottom:1px solid rgba(2,19,51,.1);margin-bottom:28px}.static-pill,.static-sample,.static-tag,.static-unlock{display:inline-flex;align-items:center;border-radius:999px;font-size:11px;font-weight:600}.static-pill{padding:5px 13px;background:rgba(30,63,227,.1);color:#1E3FE3;margin-bottom:14px}.static-sample{display:block;width:max-content;margin:0 auto 18px;padding:5px 14px;border:1.5px dashed rgba(30,63,227,.25);color:#1E3FE3;text-transform:uppercase;letter-spacing:.14em}.static-hero h1{font-size:44px;line-height:1.08;letter-spacing:-.03em;margin:0 0 16px}.static-hero h1 span{color:#1E3FE3}.static-hero p{max-width:720px;margin:0 auto;color:#5C6B8E}.static-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:28px}.static-stats div{background:#FAFBFE;border:1px solid rgba(2,19,51,.1);border-radius:8px;padding:16px}.static-stats strong{display:block;font-size:26px;color:#1E3FE3}.static-stats span{font-size:12px;color:#5C6B8E}.static-section{margin:0 0 48px}.static-section h2{font-size:28px;letter-spacing:-.02em;margin:4px 0 10px}.static-section p{color:#5C6B8E}.static-section-head{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;margin-bottom:14px}.static-score{min-width:112px;text-align:center;background:#FAFBFE;border:1px solid rgba(2,19,51,.1);border-radius:8px;padding:14px}.static-score strong{font-size:32px;color:#1E3FE3}.static-score span{color:#5C6B8E}.static-score small{display:block;color:#5C6B8E}.static-meta{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 14px}.static-meta span{background:#EAF0FF;border-radius:999px;padding:5px 10px;font-size:12px;color:#5C6B8E}.static-table-wrap{overflow:auto;border:1px solid rgba(2,19,51,.1);border-radius:8px;background:#fff}.static-table{width:100%;border-collapse:collapse;font-size:13px}.static-table th{background:#EAF0FF;color:#021333;text-align:left;padding:11px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.08em}.static-table td{padding:12px;border-top:1px solid rgba(2,19,51,.08);vertical-align:top}.static-table td:nth-child(2),.static-table td:nth-child(3){white-space:nowrap;font-weight:600}.status-critical-deep td:nth-child(3),.status-critical td:nth-child(3){color:#A32D2D}.status-low td:nth-child(3){color:#993C1D}.status-medium td:nth-child(3){color:#854F0B}.status-high td:nth-child(3){color:#3B6D11}.status-undiscovered td:nth-child(3){color:#8696BC}.static-tag{background:#EAF0FF;color:#5C6B8E;padding:2px 7px;margin-left:6px}.static-unlock{background:rgba(30,63,227,.08);color:#1E3FE3;text-decoration:none;padding:2px 7px;margin-left:6px}.static-tiers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}.static-tier{display:flex;gap:14px;background:#FAFBFE;border:1px solid rgba(2,19,51,.1);border-radius:8px;padding:16px}.static-tier-num{width:30px;height:30px;border-radius:50%;background:#1E3FE3;color:#fff;display:grid;place-items:center;font-weight:700;flex:0 0 auto}.static-tier h3{font-size:17px;margin-bottom:5px}.static-tier small{display:block;margin:8px 0;color:#1E3FE3;font-weight:600}.static-tier ul{padding-left:18px;color:#5C6B8E;font-size:13px}.static-cta{background:#021333;color:#fff;border-radius:8px;padding:28px}.static-cta p{color:#C8D4F0}.static-cta a{display:inline-flex;margin-top:14px;background:#fff;color:#1E3FE3;text-decoration:none;border-radius:999px;padding:10px 16px;font-weight:700}.static-footer{background:#021333;color:#F2F4FA;padding:34px 32px;margin-top:24px}.static-footer span,.static-footer p,.static-footer small{display:block;color:#C8D4F0;margin-top:6px}@media(max-width:1180px){.static-sidebar{display:none}.static-main{margin:0;max-width:none}}@media(max-width:720px){.static-topbar{grid-template-columns:1fr auto;padding:0 16px}.static-report-title{display:none}.static-main{padding:24px 16px}.static-hero h1{font-size:34px}.static-stats,.static-tiers{grid-template-columns:1fr}.static-section-head{display:block}.static-score{text-align:left;margin-top:14px}.static-contact{padding:8px 12px}}
+</style>
+</head>
+<body>
+<div id="static-report" class="static-report-shell">
+<nav class="static-topbar" aria-label="Report header"><a class="static-brand" href="cxontology_homepage_v3_light.html">cxontology</a><div class="static-report-title"><span>Internal - Brand-focused</span><strong>Digital Health Assessment</strong></div><a class="static-contact" href="cxontology_contact.html">Contact CXO</a></nav>
+  <aside class="static-sidebar" aria-label="Report sections"><a href="#overview" class="static-nav-link">Assessment Overview</a><a href="#experience" class="static-nav-link">01  Experience &amp; Platform</a><a href="#findability" class="static-nav-link">02  Findability &amp; Conversion</a><a href="#operations" class="static-nav-link">03  Operational Maturity</a><a href="#ai" class="static-nav-link">04  AI &amp; Agentic Readiness</a><a href="#trust" class="static-nav-link">05  Brand &amp; Trust</a><a href="#unlock-center" class="static-nav-link">Unlock Center</a><a href="#cta-form" class="static-nav-link">Connect with CXO</a></aside>
+  <main class="static-main">
+    <section id="overview" class="static-hero"><span class="static-pill">Complimentary Assessment - CXOntology</span><span class="static-sample">Sample Assessment</span><h1>Digital Ecosystem <span>Health Assessment</span></h1><p>Assessed across <strong>5 pillars</strong> and <strong>68 metrics</strong> from Experience Quality and Findability through Operational Maturity, AI Readiness, and Brand Trust. Built from publicly discoverable data; undiscovered sections require brief access or a stakeholder conversation to complete.</p><div class="static-stats"><div><strong>56/68</strong><span>Metrics discovered</span></div><div><strong>27</strong><span>Priority gaps</span></div><div><strong>12</strong><span>Need access</span></div></div></section>
+    <section class="static-section"><h2>Assessment Summary</h2><div class="static-table-wrap"><table class="static-table"><thead><tr><th>Pillar</th><th>Score</th><th>Band</th><th>Discovered</th><th>Priority Gaps</th></tr></thead><tbody><tr><td><a href="#experience">01 Experience Quality &amp; Platform Health</a></td><td>55.1/100</td><td>Underperform</td><td>25/25</td><td>9</td></tr><tr><td><a href="#findability">02 Brand Findability &amp; Conversion</a></td><td>39.9/100</td><td>Critical</td><td>18/20</td><td>9</td></tr><tr><td><a href="#operations">03 Digital Operational Maturity</a></td><td>52.6/100</td><td>Underperform</td><td>2/11</td><td>0</td></tr><tr><td><a href="#ai">04 AI Maturity &amp; Future Agentic Readiness</a></td><td>23.5/100</td><td>Critical</td><td>8/9</td><td>8</td></tr><tr><td><a href="#trust">05 Digital Brand &amp; Trust</a></td><td>62.1/100</td><td>Needs Work</td><td>3/3</td><td>1</td></tr></tbody></table></div></section>
+    <section id="experience" class="static-section" data-screen-label="Experience Quality &amp; Platform Health"><div class="static-section-head"><div><span class="static-kicker">01</span><h2>Experience Quality &amp; Platform Health</h2><p>How fast, stable, accessible, secure, and findable your digital experience is — both human-perceptible and machine-readable.</p></div><div class="static-score"><strong>55.1</strong><span>/100</span><small>Underperform</small></div></div><div class="static-meta"><span>25 of 25 metrics discovered</span><span>2 critical/issue signals</span></div><div class="static-table-wrap"><table class="static-table"><thead><tr><th>Metric</th><th>Score</th><th>Status</th><th>Notes</th></tr></thead><tbody><tr class="metric-row status-medium"><td>Load Time &amp; Performance (Web)</td><td>2.8s LCP</td><td>Needs Work</td><td>Largest Contentful Paint at 2.8s on web — slightly above the 2.5s &quot;Good&quot; threshold. Render-blocking third-party scripts are the primary contributor.</td></tr><tr class="metric-row status-critical"><td>Load Time &amp; Performance (Mobile)</td><td>5.5s LCP</td><td>Issue</td><td>Mobile LCP at 5.5s — well into the &quot;Poor&quot; range. Image optimization and code splitting required.</td></tr><tr class="metric-row status-high"><td>Responsiveness — Web (INP)</td><td>180ms</td><td>Competitive</td><td>Interaction to Next Paint at 180ms — comfortably within the &quot;Good&quot; threshold.</td></tr><tr class="metric-row status-medium"><td>Responsiveness — Mobile (INP)</td><td>420ms</td><td>Needs Work</td><td>Mobile INP at 420ms — borderline. Heavy JS execution on tap is delaying input handling.</td></tr><tr class="metric-row status-high"><td>Visual Stability — Web (CLS)</td><td>0.05</td><td>Competitive</td><td>Cumulative Layout Shift at 0.05 — well under the 0.1 threshold.</td></tr><tr class="metric-row status-medium"><td>Visual Stability — Mobile (CLS)</td><td>0.18</td><td>Needs Work</td><td>Mobile CLS at 0.18 — failing. Late-loading banners and ads are the primary culprits.</td></tr><tr class="metric-row status-medium"><td>Coding Best Practices <span class="static-tag">Partial</span> <a class="static-unlock" href="#tier-3">Unlock</a></td><td>C+</td><td>Needs Work</td><td>Lighthouse Best Practices at 78. Wappalyzer reveals 14 third-party tags and 3 deprecated libraries. Full audit requires codebase review.</td></tr><tr class="metric-row status-high"><td>Security (Web) <span class="static-tag">Partial</span> <a class="static-unlock" href="#tier-3">Unlock</a></td><td>A-</td><td>Competitive</td><td>SSL Labs grade A-. 3 minor header recommendations identified. No critical vulnerabilities in unauthenticated scan.</td></tr><tr class="metric-row status-medium"><td>Security (Mobile) <span class="static-tag">Partial</span> <a class="static-unlock" href="#tier-3">Unlock</a></td><td>B</td><td>Needs Work</td><td>Public app scan reveals 1 medium-severity finding. Full assessment requires APK/IPA artifacts.</td></tr><tr class="metric-row status-medium"><td>Infrastructure &amp; Hosting <span class="static-tag">Partial</span> <a class="static-unlock" href="#tier-5">Unlock</a></td><td>62/100</td><td>Needs Work</td><td>BuiltWith and edge-detection reveal Cloudflare CDN with global PoPs. CDN hit ratio appears healthy from response patterns. Capacity headroom, failover posture, and cost-efficiency analysis requires hosting/CDN dashboard access.</td></tr><tr class="metric-row status-critical-deep"><td>Data, Consumer &amp; Privacy Law Compliance</td><td>12/100</td><td>Critical</td><td>Missing T&amp;C and privacy policy components. CPRA non-compliance confirmed via VPN check. Cookie consent banner missing on mobile. Immediate remediation required.</td></tr><tr class="metric-row status-medium"><td>Accessibility</td><td>61/100</td><td>Needs Work</td><td>Desktop pages are WCAG 2.1 AA compliant. Mobile fails 9 criteria including contrast and touch targets. Full coverage needs design system access.</td></tr><tr class="metric-row status-low"><td>Digital Platform Version <span class="static-tag">Partial</span> <a class="static-unlock" href="#tier-3">Unlock</a></td><td>54/100</td><td>Underperform</td><td>BuiltWith fingerprints CMS as Contentful (likely 2023 release). Public signals suggest 6-12 months behind current. Exact version, patch level, and module risk requires admin or repo access.</td></tr><tr class="metric-row status-medium"><td>Release Stability <span class="static-tag">Partial</span> <a class="static-unlock" href="#tier-3">Unlock</a></td><td>58/100</td><td>Needs Work</td><td>CWV trend deltas across the last 90 days suggest 1 mid-grade regression in March 2026 (mobile LCP +400ms across 3 weeks). Root-cause correlation and release-cadence assessment requires incident logs and observability access.</td></tr><tr class="metric-row status-medium"><td>Peak Usage Reliability <span class="static-tag">Partial</span> <a class="static-unlock" href="#tier-5">Unlock</a></td><td>70/100</td><td>Needs Work</td><td>Synthetic baseline holds steady across diurnal cycles. Public-perceptible incidents minimal in last 6 months. Full peak-load validation requires controlled load testing scope and infrastructure monitoring access.</td></tr><tr class="metric-row status-low"><td>Data Layer &amp; GTM Tracking <span class="static-tag">Partial</span> <a class="static-unlock" href="#tier-2">Unlock</a></td><td>48/100</td><td>Underperform</td><td>GA4 firing detected but consent gating inconsistent. Conversion event taxonomy unclear from public signals. GTM/GA4 access required for full audit.</td></tr><tr class="metric-row status-low"><td>Structured Data &amp; Schema Markup</td><td>34/100</td><td>Underperform</td><td>Organization schema present. Missing Product, FAQ, Breadcrumb, and Article schemas — significant rich-result opportunity left on the table.</td></tr><tr class="metric-row status-medium"><td>Site Architecture &amp; Crawl Health</td><td>58/100</td><td>Needs Work</td><td>Average crawl depth of 4.2. 23 orphan pages detected. Internal link distribution is uneven across product categories.</td></tr><tr class="metric-row status-low"><td>Error &amp; Redirect Health</td><td>31/100</td><td>Underperform</td><td>68 broken links and 14 redirect chains (3+ hops) identified. Several 302s where 301s belong. High-impact quick wins.</td></tr><tr class="metric-row status-low"><td>Third-Party Script Bloat</td><td>29/100</td><td>Underperform</td><td>780KB of unused JS detected. 14 third-party tags, several render-blocking. Quantifiable performance and security drag.</td></tr><tr class="metric-row status-medium"><td>Image &amp; Media Optimization</td><td>52/100</td><td>Needs Work</td><td>42% of images served as JPEG/PNG instead of WebP/AVIF. Lazy loading partially adopted. Hero images not responsive.</td></tr><tr class="metric-row status-low"><td>JS &amp; CSS Optimization</td><td>34/100</td><td>Underperform</td><td>TBT consistently high across pages — 620ms on home mobile, 2,050ms on PDP mobile. Render-blocking scripts and unminified assets are the primary contributors. Critical path latency above 3s on key pages.</td></tr><tr class="metric-row status-high"><td>CDN &amp; Caching Behavior</td><td>82/100</td><td>Competitive</td><td>TTFB at 240ms. Strong cache-control headers. CDN hit ratio appears healthy from response patterns.</td></tr><tr class="metric-row status-medium"><td>Digital Sustainability Score</td><td>1.8g CO2</td><td>Needs Work</td><td>Same as Experience pillar — re-framed for ESG and brand narrative. 1.8g CO2 per page view places site dirtier than 62% of measured pages.</td></tr><tr class="metric-row status-low"><td>Service Worker &amp; PWA Maturity</td><td>38/100</td><td>Underperform</td><td>Lighthouse PWA audit shows manifest.json present but incomplete (missing icons at required sizes, no theme_color, scope undefined). No service worker registered. No offline resilience or install prompt. PWA capability is a missed lever for repeat-visit speed and engagement signals.</td></tr></tbody></table></div></section><section id="findability" class="static-section" data-screen-label="Brand Findability &amp; Conversion"><div class="static-section-head"><div><span class="static-kicker">02</span><h2>Brand Findability &amp; Conversion</h2><p>How discoverable your brand is across search, AI engines, and social — and how well your digital experience converts intent into outcomes.</p></div><div class="static-score"><strong>39.9</strong><span>/100</span><small>Critical</small></div></div><div class="static-meta"><span>18 of 20 metrics discovered</span><span>0 critical/issue signals</span></div><div class="static-table-wrap"><table class="static-table"><thead><tr><th>Metric</th><th>Score</th><th>Status</th><th>Notes</th></tr></thead><tbody><tr class="metric-row status-low"><td>User Journey Analysis <span class="static-tag">Partial</span> <a class="static-unlock" href="#tier-2">Unlock</a></td><td>31/100</td><td>Underperform</td><td>14 friction points documented through purchase path. No cross-sell or up-sell mechanics. Minimal FAQ and social proof content.</td></tr><tr class="metric-row status-medium"><td>Frictionless Conversion / Payment</td><td>54/100</td><td>Needs Work</td><td>No AMEX, Apple Pay, or Google Pay on mobile. No guest checkout. No cart abandonment recovery flow detected.</td></tr><tr class="metric-row status-medium"><td>Digital Engagement Feature Maturity <span class="static-tag">Partial</span> <a class="static-unlock" href="#tier-2">Unlock</a></td><td>48/100</td><td>Needs Work</td><td>No visible personalization engine. Limited behavioral tracking. No conversational AI or vector search detected.</td></tr><tr class="metric-row status-undiscovered"><td>Account Feature Maturity <a class="static-unlock" href="#tier-4">Unlock</a></td><td>&mdash;</td><td>Undiscovered</td><td>Account creation and authenticated experience require onboarding access to assess data collection, retargeting, and personalization maturity.</td></tr><tr class="metric-row status-low"><td>Search &amp; Indexing Maturity <span class="static-tag">Partial</span> <a class="static-unlock" href="#tier-2">Unlock</a></td><td>29/100</td><td>Underperform</td><td>Semantic search only — no faceted filtering, no AI/vector search. Poorly ranked internal results. High search-to-exit rate.</td></tr><tr class="metric-row status-low"><td>SEO Performance</td><td>38/100</td><td>Underperform</td><td>Indexed coverage gaps in 3 key product categories. Schema markup missing. Local GEO signals weak. Core keywords underperforming.</td></tr><tr class="metric-row status-medium"><td>GEO Performance (AI Search Visibility)</td><td>41/100</td><td>Needs Work</td><td>Brand cited in some generative search responses. Without structured data and authoritative content signals, citation frequency and accuracy are inconsistent.</td></tr><tr class="metric-row status-low"><td>Content Coverage</td><td>33/100</td><td>Underperform</td><td>Significant content gap vs. top 3 competitors across high-intent keyword clusters. Thin coverage in key category and educational content.</td></tr><tr class="metric-row status-medium"><td>Content Authority</td><td>46/100</td><td>Needs Work</td><td>Domain Rating 42. Authority concentrated in 3 cornerstone pages. Long-tail authority weak across most product categories.</td></tr><tr class="metric-row status-medium"><td>Brand Guideline Adherence</td><td>58/100</td><td>Needs Work</td><td>Visual consistency strong on web. Tonal drift detected across blog content. Mobile patterns diverge from web in 4 templates.</td></tr><tr class="metric-row status-low"><td>Competitor Content &amp; Marketing Gap <span class="static-tag">Partial</span> <a class="static-unlock" href="#tier-2">Unlock</a></td><td>28/100</td><td>Underperform</td><td>Top 3 competitors outrank on 1,200+ shared keywords. Site search data and competitor gap analysis surface significant opportunity.</td></tr><tr class="metric-row status-low"><td>Structured Data for Rich Results (SERP)</td><td>22/100</td><td>Underperform</td><td>Missing FAQ, How-To, Product, and Review schemas — direct CTR and SERP feature impact. Distinct from technical schema audit.</td></tr><tr class="metric-row status-medium"><td>E-E-A-T Signals</td><td>51/100</td><td>Needs Work</td><td>Author bios present on 30% of articles. About page strong. Editorial standards not published. Trust badges absent on key conversion pages.</td></tr><tr class="metric-row status-medium"><td>Social Media Presence &amp; Integration</td><td>55/100</td><td>Needs Work</td><td>OG and Twitter Card tags present but inconsistent across templates. Active on 3 of 5 expected platforms. Cross-channel post cadence uneven.</td></tr><tr class="metric-row status-low"><td>Email / Lead Capture Maturity <span class="static-tag">Partial</span> <a class="static-unlock" href="#tier-2">Unlock</a></td><td>34/100</td><td>Underperform</td><td>Single newsletter form on footer. No lead magnets, no exit intent capture, no double opt-in detected. Marketing automation maturity needs deeper review.</td></tr><tr class="metric-row status-medium"><td>Internationalization &amp; Localization <span class="static-tag">Partial</span> <a class="static-unlock" href="#tier-2">Unlock</a></td><td>48/100</td><td>Needs Work</td><td>hreflang present for 3 of 7 marketed regions. Currency localization inconsistent. Language toggle UX friction. Critical for multi-market brands.</td></tr><tr class="metric-row status-medium"><td>Domain Authority &amp; Backlink Health</td><td>52/100</td><td>Needs Work</td><td>DR 42 with 1,840 referring domains. 8% of links flagged as toxic. Anchor text profile leans branded — opportunity for topical link building.</td></tr><tr class="metric-row status-low"><td>Competitor Benchmark Overlay</td><td>Behind 3 of 3</td><td>Underperform</td><td>Side-by-side scans against top 3 competitors show your performance, content, and AI readiness lag in 7 of 10 metrics.</td></tr><tr class="metric-row status-undiscovered"><td>Traffic Analysis (Sources/Demographics) <a class="static-unlock" href="#tier-2">Unlock</a></td><td>&mdash;</td><td>Undiscovered</td><td>Source attribution, demographic breakdown, and engagement depth require GA4 access for definitive analysis.</td></tr><tr class="metric-row status-low"><td>Landing Page Program — Structural Audit</td><td>42/100</td><td>Underperform</td><td>Site crawl identifies 12 landing pages under /campaigns/ but message-match to discovered ad copy is inconsistent. Conversion infrastructure (event tracking, A/B test snippets) missing on 8 of 12. Program shows ad-hoc execution rather than systematic campaign-readiness.</td></tr></tbody></table></div></section><section id="operations" class="static-section" data-screen-label="Digital Operational Maturity"><div class="static-section-head"><div><span class="static-kicker">03</span><h2>Digital Operational Maturity</h2><p>How efficiently your digital, marketing, and technology teams execute against business signals — process, governance, and responsiveness.</p></div><div class="static-score"><strong>52.6</strong><span>/100</span><small>Underperform</small></div></div><div class="static-meta"><span>2 of 11 metrics discovered</span><span>0 critical/issue signals</span></div><div class="static-table-wrap"><table class="static-table"><thead><tr><th>Metric</th><th>Score</th><th>Status</th><th>Notes</th></tr></thead><tbody><tr class="metric-row status-medium"><td>Design System &amp; Component Maturity <span class="static-tag">Partial</span> <a class="static-unlock" href="#tier-1">Unlock</a></td><td>52/100</td><td>Needs Work</td><td>Visual consistency suggests partial design system adoption. Component drift detected across 3 templates. Full audit requires Figma access.</td></tr><tr class="metric-row status-undiscovered"><td>ContentOps Maturity <a class="static-unlock" href="#tier-1">Unlock</a></td><td>&mdash;</td><td>Undiscovered</td><td>Lifecycle, governance, vendor model, and global localization require stakeholder consultation. CXO can recommend agentic content ops solutions.</td></tr><tr class="metric-row status-undiscovered"><td>SDLC Process Oversight <a class="static-unlock" href="#tier-1">Unlock</a></td><td>&mdash;</td><td>Undiscovered</td><td>DevOps process, code governance, change management, and deployment cadence require platform and process review.</td></tr><tr class="metric-row status-undiscovered"><td>MarkOps Responsiveness <a class="static-unlock" href="#tier-1">Unlock</a></td><td>&mdash;</td><td>Undiscovered</td><td>Speed and quality of response to market signals, customer signals, and campaign opportunities. Data-driven marketing methodology adherence.</td></tr><tr class="metric-row status-undiscovered"><td>Operational Responsiveness — Digital Issues <a class="static-unlock" href="#tier-1">Unlock</a></td><td>&mdash;</td><td>Undiscovered</td><td>Time-to-resolution for digital experience issues. Project management tooling and ticket flow maturity.</td></tr><tr class="metric-row status-undiscovered"><td>Operational Responsiveness — Tech Issues <a class="static-unlock" href="#tier-1">Unlock</a></td><td>&mdash;</td><td>Undiscovered</td><td>Time-to-resolution for technology and infrastructure issues. Code, ticket, and incident management maturity.</td></tr><tr class="metric-row status-undiscovered"><td>Operational Efficiency — Digital Issues <a class="static-unlock" href="#tier-1">Unlock</a></td><td>&mdash;</td><td>Undiscovered</td><td>Cost-of-resolution for digital issues. Resource allocation, vendor coordination, and process efficiency review.</td></tr><tr class="metric-row status-undiscovered"><td>Operational Efficiency — Tech Issues <a class="static-unlock" href="#tier-1">Unlock</a></td><td>&mdash;</td><td>Undiscovered</td><td>Cost-of-resolution for tech issues. Engineering capacity, automation, and tooling review.</td></tr><tr class="metric-row status-undiscovered"><td>Monitoring &amp; Reports <a class="static-unlock" href="#tier-1">Unlock</a></td><td>&mdash;</td><td>Undiscovered</td><td>Business intelligence, infrastructure, code, and security monitoring posture. Dashboard-to-KPI alignment.</td></tr><tr class="metric-row status-undiscovered"><td>Digital Team Structure &amp; Collaboration <a class="static-unlock" href="#tier-5">Unlock</a></td><td>&mdash;</td><td>Undiscovered</td><td>Cross-functional alignment, agency vs. in-house balance, and sprint cadence require leadership interviews.</td></tr><tr class="metric-row status-medium"><td>Property &amp; Subdomain Inventory</td><td>54/100</td><td>Needs Work</td><td>Certificate transparency reveals 23 subdomains in use. Brand consistency mixed across discovered properties (3 use legacy design, 2 have inconsistent footers). Governance signals from public surface suggest partial inventory hygiene; full audit (ownership, monitoring, retirement plan) requires stakeholder consultation.</td></tr></tbody></table></div></section><section id="ai" class="static-section" data-screen-label="AI Maturity &amp; Future Agentic Readiness"><div class="static-section-head"><div><span class="static-kicker">04</span><h2>AI Maturity &amp; Future Agentic Readiness</h2><p>How prepared your digital ecosystem is for AI-driven discovery, conversational engagement, and the emerging agentic web.</p></div><div class="static-score"><strong>23.5</strong><span>/100</span><small>Critical</small></div></div><div class="static-meta"><span>8 of 9 metrics discovered</span><span>0 critical/issue signals</span></div><div class="static-table-wrap"><table class="static-table"><thead><tr><th>Metric</th><th>Score</th><th>Status</th><th>Notes</th></tr></thead><tbody><tr class="metric-row status-low"><td>AI Discoverability</td><td>31/100</td><td>Underperform</td><td>HubSpot AI Search Grader returns weak signals. Brand mentions in LLM responses are inconsistent. Schema and authority gaps limit visibility.</td></tr><tr class="metric-row status-undiscovered"><td>BPO using Automation &amp; A.I. <a class="static-unlock" href="#tier-1">Unlock</a></td><td>&mdash;</td><td>Undiscovered</td><td>Use of automation and AI within business processes — content generation, analytics, marketing automation — requires stakeholder consultation.</td></tr><tr class="metric-row status-low"><td>AI Search Maturity (on-site)</td><td>18/100</td><td>Underperform</td><td>On-site search is keyword-only. No vector search, no semantic re-ranking, no LLM-powered answer surface. Significant gap vs. category benchmark.</td></tr><tr class="metric-row status-low"><td>AI Features (Industry Benchmark)</td><td>Behind 2 of 3</td><td>Underperform</td><td>Top 2 of 3 named competitors deploy visible AI features (chat, recommendations, smart search). Your visible AI surface is minimal.</td></tr><tr class="metric-row status-low"><td>AI-Powered Personalization <span class="static-tag">Partial</span> <a class="static-unlock" href="#tier-5">Unlock</a></td><td>22/100</td><td>Underperform</td><td>No personalization platform detected via BuiltWith. No dynamic content delivery. No behavioral product recommendations. Effectiveness audit needs platform access.</td></tr><tr class="metric-row status-low"><td>Conversational AI &amp; Chatbot Maturity</td><td>15/100</td><td>Underperform</td><td>No chatbot or virtual assistant detected on web or mobile. Conversational AI is now table stakes in this category.</td></tr><tr class="metric-row status-low"><td>Agentic AI &amp; Automation Readiness <span class="static-tag">Partial</span> <a class="static-unlock" href="#tier-5">Unlock</a></td><td>26/100</td><td>Underperform</td><td>No public APIs documented. Structured data sparse. Automation signals weak. Infrastructure requires investment to support AI agents.</td></tr><tr class="metric-row status-low"><td>AI Agent Readiness</td><td>19/100</td><td>Underperform</td><td>No llms.txt detected. robots.txt has no AI crawler policies. Structured data incomplete. API discoverability low. 2026 frontier metric — high differentiation opportunity.</td></tr><tr class="metric-row status-low"><td>MCP &amp; Agentic Transaction Surface</td><td>12/100</td><td>Underperform</td><td>Well-known URI probes reveal no /.well-known/mcp, no /agent.json, no /llms.txt. robots.txt has no AI-specific directives. No MCP server published. No structured action endpoints. 2026 frontier signal — agentic-readiness floor.</td></tr></tbody></table></div></section><section id="trust" class="static-section" data-screen-label="Digital Brand &amp; Trust"><div class="static-section-head"><div><span class="static-kicker">05</span><h2>Digital Brand &amp; Trust</h2><p>How your digital presence signals credibility, brand consistency, reputation, and sustainability across public touchpoints.</p></div><div class="static-score"><strong>62.1</strong><span>/100</span><small>Needs Work</small></div></div><div class="static-meta"><span>3 of 3 metrics discovered</span><span>0 critical/issue signals</span></div><div class="static-table-wrap"><table class="static-table"><thead><tr><th>Metric</th><th>Score</th><th>Status</th><th>Notes</th></tr></thead><tbody><tr class="metric-row status-medium"><td>Trust &amp; Credibility Signals</td><td>58/100</td><td>Needs Work</td><td>SSL grade A-. Privacy policy linked but legacy. Physical address and phone number missing from footer on mobile. 3 trust badges on checkout — inconsistent placement.</td></tr><tr class="metric-row status-medium"><td>Brand Consistency Across Channels</td><td>62/100</td><td>Needs Work</td><td>Visual consistency strong web ↔ social. Tonal drift on email touchpoints. Mobile app branding diverges from web in 4 areas.</td></tr><tr class="metric-row status-low"><td>Online Reputation Score</td><td>3.4 / 5</td><td>Underperform</td><td>Aggregated 3.4/5 across G2, Trustpilot, and Google Business — below category median of 4.1. Recent review velocity declining. No visible response strategy.</td></tr></tbody></table></div></section>
+    <section id="unlock-center" class="static-section"><span class="static-kicker">Unlock Center</span><h2>Access needed to complete undiscovered signals</h2><p>These steps fill in the areas that cannot be validated from public surface data alone.</p><div class="static-tiers"><article id="tier-1" class="static-tier"><div class="static-tier-num">1</div><div><h3>30-Min Stakeholder Discovery Call</h3><p>A short conversation with your digital, marketing, or tech leadership.</p><small>30-min call - Low Effort</small><ul><li><strong>Operational Maturity:</strong> ContentOps, MarkOps, SDLC, MonOps, team structure, operational responsiveness &amp; efficiency</li><li><strong>AI Maturity:</strong> AI in business processes baseline</li><li><strong>Findability:</strong> Account feature maturity (when paired with auth)</li></ul></div></article><article id="tier-2" class="static-tier"><div class="static-tier-num">2</div><div><h3>Analytics &amp; Tracking Access</h3><p>Read-only access to Google Analytics 4 and Google Tag Manager.</p><small>GA4 + GTM access - Low Effort</small><ul><li><strong>Findability:</strong> Traffic Analysis (sources, demographics, engagement depth)</li><li><strong>Experience:</strong> Data Layer &amp; GTM Tracking — full audit</li></ul></div></article><article id="tier-3" class="static-tier"><div class="static-tier-num">3</div><div><h3>CMS / Platform Read-Only</h3><p>Read-only admin or repository access to your CMS / digital platform.</p><small>CMS access - Medium Effort</small><ul><li><strong>Experience:</strong> Digital Platform Version, Release Stability</li><li><strong>Experience:</strong> Coding Best Practices — full audit</li></ul></div></article><article id="tier-4" class="static-tier"><div class="static-tier-num">4</div><div><h3>MarTech &amp; Personalization Stack</h3><p>Read access to your marketing automation and personalization tools (Optimizely, Adobe Target, Dynamic Yield, etc.) plus a test authenticated account.</p><small>MarTech access - Medium Effort</small><ul><li><strong>Findability:</strong> Account Feature Maturity (authenticated experience)</li><li><strong>AI Maturity:</strong> Personalization engine assessment</li><li><strong>Findability:</strong> Lifecycle &amp; nurture audit</li></ul></div></article><article id="tier-5" class="static-tier"><div class="static-tier-num">5</div><div><h3>Infrastructure, Security &amp; Code Audit</h3><p>Authenticated scans, infrastructure dashboards, code repository access, and API documentation.</p><small>infra + code audit - Deeper Engagement</small><ul><li><strong>Experience:</strong> Infrastructure &amp; Hosting, Peak Usage Reliability</li><li><strong>Experience:</strong> Authenticated security scan (vs. public-only baseline)</li><li><strong>AI Maturity:</strong> Agentic AI readiness — internal API, MCP, and integration surface</li></ul></div></article></div></section>
+    <section id="cta-form" class="static-section static-cta"><h2>Connect with CXO</h2><p>Share access, schedule a stakeholder discovery call, or ask CXOntology to convert this snapshot into a scoped action plan.</p><a href="cxontology_contact.html">Contact CXO</a></section>
+  </main>
+  <footer class="static-footer"><strong>cxontology</strong><span>Digital experiences. Unified.</span><p>Global HQ: Chicago, Illinois - Americas: Austin, Texas - Asia Pacific: Chennai, OMR</p><small>&copy; 2025-26 cxontology Private Limited. All rights reserved.</small></footer>
+</div>
+</body>
+</html>

@@ -1,111 +1,143 @@
+@import "tailwindcss";
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
+  --ink: #021333;
+  --muted: #5c6b8e;
+  --line: rgba(2, 19, 51, 0.12);
+  --surface: #ffffff;
+  --surface-soft: #f6f8ff;
+  --surface-strong: #eaf0ff;
+  --brand: #1e3fe3;
+  --brand-deep: #122b9e;
+  --success: #12734a;
+  color: var(--ink);
+  background: #f4f7ff;
+  font-family: Inter, Outfit, "Segoe UI", system-ui, sans-serif;
   font-synthesis: none;
+  letter-spacing: 0;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
 }
 
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
 #root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
   min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+.teampilot-grid {
+  background-image:
+    linear-gradient(rgba(30, 63, 227, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(30, 63, 227, 0.05) 1px, transparent 1px);
+  background-size: 34px 34px;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+.shimmer {
+  overflow: hidden;
+  position: relative;
+}
+
+.shimmer::after {
+  animation: shimmer 1.65s infinite;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.82), transparent);
+  content: "";
+  inset: 0;
+  position: absolute;
+  transform: translateX(-100%);
+}
+
+.fc {
+  --fc-border-color: rgba(2, 19, 51, 0.1);
+  --fc-button-bg-color: #1e3fe3;
+  --fc-button-border-color: #1e3fe3;
+  --fc-button-hover-bg-color: #122b9e;
+  --fc-today-bg-color: rgba(30, 63, 227, 0.1);
+  color: #021333;
+  font-size: 0.79rem;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.fc .fc-button {
+  border-radius: 0.45rem;
+  box-shadow: none;
+  padding: 0.26rem 0.46rem;
+}
+
+.fc .fc-daygrid-day-number {
+  color: #5c6b8e;
+  text-decoration: none;
+}
+
+.Toastify__toast--success {
+  background: #087443;
+}
+
+.Toastify__toast--error {
+  background: #b42318;
+}
+
+.Toastify__toast--warning {
+  background: #b45309;
+}
+
+.Toastify__toast--info {
+  background: #155eef;
+}
+
+.teampilot-shell {
+  background-color: #f4f7ff;
+  color: #021333;
+}
+
+.teampilot-dark {
+  background-color: #021333;
+  color: #eef4ff;
+}
+
+.teampilot-dark .app-card,
+.teampilot-dark aside,
+.teampilot-dark header {
+  background-color: #081f4a;
+  border-color: rgba(234, 240, 255, 0.16);
+}
+
+.teampilot-dark .bg-white,
+.teampilot-dark .bg-\[\#f6f8ff\] {
+  background-color: #0c2858;
+}
+
+.teampilot-dark .text-\[\#021333\] {
+  color: #eef4ff;
+}
+
+.teampilot-dark .text-\[\#5c6b8e\] {
+  color: #b5c6ea;
+}
+
+.teampilot-dark input {
+  color: #eef4ff;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
   }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
 }
