@@ -1,5 +1,6 @@
 import {
   login,
+  loginWithMicrosoft,
   loadSession,
   persistSession,
   requestReset,
@@ -10,6 +11,7 @@ import {
 export const authApi = {
   loadSession,
   login,
+  loginWithMicrosoft,
   persistSession,
   requestReset,
   resetPassword,

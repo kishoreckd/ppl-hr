@@ -7,6 +7,13 @@ import { useMemo, useState } from 'react'
 import { Badge } from '../../../shared/components/ui/badge'
 import { Button } from '../../../shared/components/ui/button'
 import { Card } from '../../../shared/components/ui/card'
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '../../../shared/components/ui/dialog'
 import type { IAttendanceRecord } from '../../attendance/types/attendance-types'
 import {
   formatMinutes,
@@ -93,38 +100,42 @@ export function AttendanceCalendar({ records, title }: IAttendanceCalendarProps)
           plugins={[dayGridPlugin, interactionPlugin]}
         />
       </Card>
-      {selectedRecord && <AttendanceDetail record={selectedRecord} onClose={() => setSelectedRecord(null)} />}
+      <Dialog open={Boolean(selectedRecord)} onOpenChange={(open) => !open && setSelectedRecord(null)}>
+        <DialogContent>
+          {selectedRecord && <AttendanceDetail record={selectedRecord} />}
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
 
-function AttendanceDetail({ onClose, record }: { onClose: () => void; record: IAttendanceRecord }) {
+function AttendanceDetail({ record }: { record: IAttendanceRecord }) {
   const status = getAttendanceStatus(record)
   const workedMinutes = getWorkedMinutes(record, record.swipeOut)
 
   return (
-    <div className="fixed inset-0 z-40 grid place-items-center bg-[#021333]/40 p-4" role="dialog">
-      <Card className="w-full max-w-lg p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-black uppercase text-[#5c6b8e]">{record.date}</p>
-            <h2 className="mt-1 text-2xl font-black text-[#021333]">Attendance detail</h2>
-          </div>
-          <Badge tone={status === 'Absent' ? 'danger' : status === 'Half Day' ? 'warning' : 'success'}>
-            {status}
-          </Badge>
-        </div>
-        <div className="mt-5 grid gap-2 sm:grid-cols-2">
-          <Detail icon={<LogIn className="size-4" />} label="Swipe in" value={getClockLabel(record.swipeIn)} />
-          <Detail icon={<LogOut className="size-4" />} label="Swipe out" value={getClockLabel(record.swipeOut)} />
-          <Detail icon={<Timer className="size-4" />} label="Worked hours" value={formatMinutes(workedMinutes)} />
-          <Detail icon={<Timer className="size-4" />} label="Late mark" value={record.late ? 'Late' : 'Clear'} />
-        </div>
-        <Button className="mt-4 w-full" onClick={onClose} variant="outline">
+    <>
+      <div className="flex items-start justify-between gap-3 pr-9">
+        <DialogHeader>
+          <p className="text-xs font-black uppercase text-[#5c6b8e]">{record.date}</p>
+          <DialogTitle>Attendance detail</DialogTitle>
+        </DialogHeader>
+        <Badge tone={status === 'Absent' ? 'danger' : status === 'Half Day' ? 'warning' : 'success'}>
+          {status}
+        </Badge>
+      </div>
+      <div className="mt-5 grid gap-2 sm:grid-cols-2">
+        <Detail icon={<LogIn className="size-4" />} label="Check in" value={getClockLabel(record.swipeIn)} />
+        <Detail icon={<LogOut className="size-4" />} label="Check out" value={getClockLabel(record.swipeOut)} />
+        <Detail icon={<Timer className="size-4" />} label="Worked hours" value={formatMinutes(workedMinutes)} />
+        <Detail icon={<Timer className="size-4" />} label="Late mark" value={record.late ? 'Late' : 'Clear'} />
+      </div>
+      <DialogClose asChild>
+        <Button className="mt-4 w-full" variant="outline">
           Close
         </Button>
-      </Card>
-    </div>
+      </DialogClose>
+    </>
   )
 }
 

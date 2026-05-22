@@ -14,12 +14,12 @@ export function EmployeeAttendancePage() {
       <div className="space-y-4">
         <SwipeConsole />
         <Card className="p-4 sm:p-5">
-          <Badge tone="brand">Swipe activity</Badge>
+          <Badge tone="brand">Check activity</Badge>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             {[
               ['Current status', status],
               ['Today shift', 'General'],
-              ['Recent swipe', getClockLabel(today.swipeIn)],
+              ['Recent check in', getClockLabel(today.swipeIn)],
             ].map(([label, value]) => (
               <div className="rounded-md border border-[#021333]/10 bg-[#f6f8ff] p-3" key={label}>
                 <p className="text-xs font-black uppercase text-[#5c6b8e]">{label}</p>

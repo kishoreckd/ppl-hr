@@ -1,5 +1,9 @@
 import { ATTENDANCE_POLICY } from '../constants/attendance-policy'
-import type { IAttendanceRecord, AttendanceStatusType } from '../types/attendance-types'
+import type {
+  AttendanceStatusType,
+  IAttendancePunch,
+  IAttendanceRecord,
+} from '../types/attendance-types'
 
 export function getDateKey(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
@@ -34,8 +38,24 @@ export function getWorkedMinutes(record: IAttendanceRecord, end = new Date().toI
     return record.totalMinutes
   }
 
+  if (record.punches?.length) {
+    return getPunchMinutes(record.punches, end)
+  }
+
   const lastSwipe = record.swipeOut ?? end
   return minutesBetween(record.swipeIn, lastSwipe)
+}
+
+export function isCheckedIn(record: IAttendanceRecord) {
+  if (record.punches?.length) {
+    return record.punches.at(-1)?.action === 'Check In'
+  }
+
+  return Boolean(record.swipeIn && !record.swipeOut)
+}
+
+export function getLastPunch(record: IAttendanceRecord) {
+  return record.punches?.at(-1)
 }
 
 export function getLateMark(iso?: string) {
@@ -55,7 +75,7 @@ export function getAttendanceStatus(record: IAttendanceRecord): AttendanceStatus
     return record.type
   }
 
-  if (record.swipeIn && !record.swipeOut) {
+  if (isCheckedIn(record)) {
     return 'In Progress'
   }
 
@@ -74,4 +94,22 @@ export function getAttendanceStatus(record: IAttendanceRecord): AttendanceStatus
 
 export function getOvertimeMinutes(minutes: number) {
   return Math.max(0, minutes - ATTENDANCE_POLICY.overtimeMinutes)
+}
+
+function getPunchMinutes(punches: IAttendancePunch[], end: string) {
+  let total = 0
+  let openCheckIn: string | undefined
+
+  punches.forEach((punch) => {
+    if (punch.action === 'Check In') {
+      openCheckIn = punch.occurredAt
+    }
+
+    if (punch.action === 'Check Out' && openCheckIn) {
+      total += minutesBetween(openCheckIn, punch.occurredAt)
+      openCheckIn = undefined
+    }
+  })
+
+  return openCheckIn ? total + minutesBetween(openCheckIn, end) : total
 }

@@ -8,6 +8,14 @@ import { toast } from 'react-toastify'
 import { Badge } from '../../../shared/components/ui/badge'
 import { Button } from '../../../shared/components/ui/button'
 import { Card } from '../../../shared/components/ui/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../../shared/components/ui/table'
 import type { ITeamAttendanceMember } from '../../attendance/types/attendance-types'
 import { formatMinutes } from '../../attendance/utils/time-utils'
 
@@ -27,7 +35,7 @@ export function TeamAttendanceTable({ members }: { members: ITeamAttendanceMembe
       ),
       header: 'Status',
     }),
-    column.accessor('swipeIn', { header: 'Swipe in' }),
+    column.accessor('swipeIn', { header: 'Check in' }),
     column.accessor('totalMinutes', {
       cell: (info) => formatMinutes(info.getValue()),
       header: 'Hours',
@@ -61,32 +69,30 @@ export function TeamAttendanceTable({ members }: { members: ITeamAttendanceMembe
         <h2 className="text-lg font-black text-[#021333]">Team attendance monitoring</h2>
         <p className="text-sm text-[#5c6b8e]">Manager visibility includes hours, anomalies, and correction approvals.</p>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[680px] text-left text-sm">
-          <thead>
+      <Table className="min-w-[680px]">
+          <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
+              <TableRow className="bg-[#f6f8ff] hover:bg-[#f6f8ff]" key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <th className="bg-[#f6f8ff] px-3 py-3 text-xs font-black uppercase text-[#5c6b8e]" key={header.id}>
+                  <TableHead className="px-3 py-3" key={header.id}>
                     {flexRender(header.column.columnDef.header, header.getContext())}
-                  </th>
+                  </TableHead>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </thead>
-          <tbody>
+          </TableHeader>
+          <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <tr className="border-t border-[#021333]/8 transition hover:bg-[#f6f8ff]" key={row.id}>
+              <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
-                  <td className="px-3 py-3" key={cell.id}>
+                  <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
+                  </TableCell>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+      </Table>
     </Card>
   )
 }

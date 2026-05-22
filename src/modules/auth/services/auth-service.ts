@@ -7,6 +7,8 @@ import type {
 } from '../validations/auth-schema'
 
 const SESSION_KEY = 'teampilot.auth.session'
+const ADMIN_EMAIL = 'admin@cxontology.com'
+const ADMIN_PASSWORD = 'Admin@123'
 
 function createToken(user: IAuthUser) {
   return `teampilot.${window.btoa(`${user.email}:${user.role}:${Date.now()}`)}.jwt`
@@ -18,6 +20,10 @@ function wait(duration: number) {
 
 export async function login(values: LoginSchemaType): Promise<IAuthSession> {
   await wait(520)
+
+  if (values.email.toLowerCase() === ADMIN_EMAIL && values.password !== ADMIN_PASSWORD) {
+    throw new Error('Invalid admin credentials. Check the email and password.')
+  }
 
   if (values.password.toLowerCase().includes('invalid')) {
     throw new Error('Invalid credentials. Check the work email and password.')
@@ -52,6 +58,21 @@ export async function signup(values: SignupSchemaType): Promise<IAuthSession> {
   }
 }
 
+export async function loginWithMicrosoft(): Promise<IAuthSession> {
+  await wait(520)
+
+  const user = {
+    email: 'employee@cxontology.com',
+    name: 'Microsoft User',
+    role: 'Employee' as const,
+  }
+
+  return {
+    token: createToken(user),
+    user,
+  }
+}
+
 export async function requestReset(values: EmailSchemaType) {
   await wait(420)
   return values.email
@@ -82,7 +103,7 @@ export function persistSession(session: IAuthSession | null) {
 }
 
 function getRoleFromEmail(email: string) {
-  if (email.toLowerCase().includes('admin')) {
+  if (email.toLowerCase() === ADMIN_EMAIL || email.toLowerCase().includes('admin')) {
     return 'Admin' as const
   }
 

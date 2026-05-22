@@ -20,6 +20,15 @@ export function useSignup() {
   })
 }
 
+export function useMicrosoftLogin() {
+  const setSession = useAuthStore((state) => state.setSession)
+
+  return useMutation({
+    mutationFn: authApi.loginWithMicrosoft,
+    onSuccess: setSession,
+  })
+}
+
 export function usePasswordResetRequest() {
   return useMutation({ mutationFn: authApi.requestReset })
 }

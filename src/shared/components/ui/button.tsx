@@ -23,7 +23,7 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-3.5 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1e3fe3]/45 disabled:pointer-events-none disabled:opacity-50',
+        'inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-md px-3.5 text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1e3fe3]/45 disabled:pointer-events-none disabled:opacity-50',
         BUTTON_VARIANTS[variant],
         className,
       )}

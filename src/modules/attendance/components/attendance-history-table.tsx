@@ -6,6 +6,14 @@ import {
 } from '@tanstack/react-table'
 import { Badge } from '../../../shared/components/ui/badge'
 import { Card } from '../../../shared/components/ui/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../../shared/components/ui/table'
 import type { IAttendanceRecord } from '../types/attendance-types'
 import {
   formatMinutes,
@@ -29,12 +37,12 @@ export function AttendanceHistoryTable({ records }: { records: IAttendanceRecord
     }),
     column.display({
       cell: ({ row }) => getClockLabel(row.original.swipeIn),
-      header: 'Swipe in',
+      header: 'Check in',
       id: 'swipeIn',
     }),
     column.display({
       cell: ({ row }) => getClockLabel(row.original.swipeOut),
-      header: 'Swipe out',
+      header: 'Check out',
       id: 'swipeOut',
     }),
     column.display({
@@ -55,34 +63,32 @@ export function AttendanceHistoryTable({ records }: { records: IAttendanceRecord
     <Card className="overflow-hidden">
       <div className="border-b border-[#021333]/10 p-4">
         <h2 className="text-lg font-black text-[#021333]">Attendance history</h2>
-        <p className="text-sm text-[#5c6b8e]">Monthly swipe timings, status, late marks, and working hours.</p>
+        <p className="text-sm text-[#5c6b8e]">Monthly check timings, status, late marks, and working hours.</p>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[620px] text-left text-sm">
-          <thead>
+      <Table className="min-w-[620px]">
+          <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
+              <TableRow className="bg-[#f6f8ff] hover:bg-[#f6f8ff]" key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <th className="bg-[#f6f8ff] px-3 py-3 text-xs font-black uppercase text-[#5c6b8e]" key={header.id}>
+                  <TableHead className="px-3 py-3" key={header.id}>
                     {flexRender(header.column.columnDef.header, header.getContext())}
-                  </th>
+                  </TableHead>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </thead>
-          <tbody>
+          </TableHeader>
+          <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <tr className="border-t border-[#021333]/8 hover:bg-[#f6f8ff]" key={row.id}>
+              <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
-                  <td className="px-3 py-3" key={cell.id}>
+                  <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
+                  </TableCell>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+      </Table>
     </Card>
   )
 }

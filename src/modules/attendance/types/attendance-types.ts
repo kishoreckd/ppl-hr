@@ -7,12 +7,21 @@ export type AttendanceStatusType =
   | 'Weekend'
   | 'In Progress'
 
-export type SwipeActionType = 'Swipe In' | 'Swipe Out'
+export type SwipeActionType = 'Check In' | 'Check Out'
+export type AttendanceMoodType = 'Energetic' | 'Focused' | 'Neutral' | 'Stressed' | 'Frustrated'
+
+export interface IAttendancePunch {
+  action: SwipeActionType
+  mood?: AttendanceMoodType
+  occurredAt: string
+}
 
 export interface IAttendanceRecord {
   date: string
   employeeName: string
   late: boolean
+  mood?: AttendanceMoodType
+  punches?: IAttendancePunch[]
   swipeIn?: string
   swipeOut?: string
   totalMinutes: number

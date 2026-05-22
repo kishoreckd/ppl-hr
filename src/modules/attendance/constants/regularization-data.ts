@@ -1,0 +1,68 @@
+import type { IRegularizationRequest } from '../types/regularization-types'
+
+export const REGULARIZATION_REQUESTS: IRegularizationRequest[] = [
+  {
+    dates: 'May 22, May 21',
+    days: 2,
+    employeeName: 'Mugesh Rajapandiyan',
+    id: 'reg-101',
+    status: 'New Request',
+    time: '09:30 am - 06:30 pm',
+  },
+  {
+    dates: 'May 20',
+    days: 1,
+    employeeName: 'Leanna Alvord',
+    id: 'reg-102',
+    status: 'On Hold',
+    time: '09:40 am - 06:30 pm',
+  },
+  {
+    dates: 'May 18, May 19',
+    days: 2,
+    employeeName: 'Irina George',
+    id: 'reg-103',
+    status: 'Approved',
+    time: '09:30 am - 06:30 pm',
+  },
+  {
+    dates: 'May 16',
+    days: 1,
+    employeeName: 'Dev Shah',
+    id: 'reg-104',
+    status: 'Rejected',
+    time: '10:12 am - 05:42 pm',
+  },
+  {
+    dates: 'May 14, May 15, May 16',
+    days: 3,
+    employeeName: 'Nikhil Rao',
+    id: 'reg-105',
+    status: 'New Request',
+    time: '09:30 am - 06:30 pm',
+  },
+  {
+    dates: 'May 12',
+    days: 1,
+    employeeName: 'Asha Menon',
+    id: 'reg-106',
+    status: 'Approved',
+    time: '09:22 am - 06:18 pm',
+  },
+  {
+    dates: 'May 09',
+    days: 1,
+    employeeName: 'Meera Patel',
+    id: 'reg-107',
+    status: 'On Hold',
+    time: '09:30 am - 06:30 pm',
+  },
+  {
+    dates: 'May 07',
+    days: 1,
+    employeeName: 'Arun Kumar',
+    id: 'reg-108',
+    status: 'New Request',
+    time: '09:30 am - 06:30 pm',
+  },
+]

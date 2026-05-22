@@ -2,11 +2,20 @@ import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CalendarPlus2, CheckCircle2, PlaneTakeoff } from 'lucide-react'
-import { useForm, type UseFormRegisterReturn } from 'react-hook-form'
+import { Controller, useForm, type UseFormRegisterReturn } from 'react-hook-form'
 import { toast } from 'react-toastify'
 import { Badge } from '../../../shared/components/ui/badge'
 import { Button } from '../../../shared/components/ui/button'
 import { Card } from '../../../shared/components/ui/card'
+import { Input } from '../../../shared/components/ui/input'
+import { Label } from '../../../shared/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../../shared/components/ui/select'
 import type { AuthRoleType } from '../../auth/types/auth-types'
 import { useLeaveCalendarStore } from '../store/use-leave-calendar-store'
 import {
@@ -20,9 +29,6 @@ interface ILeaveCalendarPageProps {
   name: string
   role: AuthRoleType
 }
-
-const FIELD =
-  'mt-1 h-10 w-full rounded-md border border-[#021333]/15 bg-white px-3 text-sm text-[#021333] outline-none focus:border-[#1e3fe3] focus:ring-2 focus:ring-[#1e3fe3]/15'
 
 export function LeaveCalendarPage({ name, role }: ILeaveCalendarPageProps) {
   const manager = role === 'Manager' || role === 'Admin'
@@ -155,14 +161,25 @@ function LeaveForm({ name }: { name: string }) {
           toast.success('Leave request submitted successfully.')
         })}
       >
-        <label className="block text-sm font-bold text-[#021333]">
-          Leave type
-          <select className={FIELD} {...form.register('leaveType')}>
-            <option>Casual leave</option>
-            <option>Sick leave</option>
-            <option>Earned leave</option>
-          </select>
-        </label>
+        <Controller
+          control={form.control}
+          name="leaveType"
+          render={({ field }) => (
+            <Label>
+              Leave type
+              <Select onValueChange={field.onChange} value={field.value}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Casual leave">Casual leave</SelectItem>
+                  <SelectItem value="Sick leave">Sick leave</SelectItem>
+                  <SelectItem value="Earned leave">Earned leave</SelectItem>
+                </SelectContent>
+              </Select>
+            </Label>
+          )}
+        />
         <Field error={form.formState.errors.fromDate?.message} label="From" register={form.register('fromDate')} type="date" />
         <Field error={form.formState.errors.toDate?.message} label="To" register={form.register('toDate')} type="date" />
         <Button className="w-full" type="submit">
@@ -185,10 +202,10 @@ function Field({
   type?: string
 }) {
   return (
-    <label className="block text-sm font-bold text-[#021333]">
+    <Label>
       {label}
-      <input className={FIELD} type={type} {...register} />
+      <Input className="mt-1" type={type} {...register} />
       {error && <span className="mt-1 block text-xs text-rose-700">{error}</span>}
-    </label>
+    </Label>
   )
 }

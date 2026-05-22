@@ -3,6 +3,7 @@ import { Badge } from '../../../shared/components/ui/badge'
 import { Card } from '../../../shared/components/ui/card'
 import { Skeleton } from '../../../shared/components/ui/skeleton'
 import { useTeamAttendance } from '../../attendance/hooks/use-attendance-data'
+import { SwipeConsole } from '../../attendance/components/swipe-console'
 import { formatMinutes } from '../../attendance/utils/time-utils'
 
 export function ManagerDashboard() {
@@ -20,6 +21,7 @@ export function ManagerDashboard() {
 
   return (
     <div className="space-y-4">
+      <SwipeConsole />
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <TeamMetric icon={<Radio className="size-5" />} label="Online" value={`${online.length}`} />
         <TeamMetric icon={<UserMinus className="size-5" />} label="Absent" value={`${absent.length}`} />

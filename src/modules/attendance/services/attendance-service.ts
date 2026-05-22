@@ -76,8 +76,8 @@ export async function fetchTeamAttendance(): Promise<ITeamAttendanceMember[]> {
 
   return [
     { correction: 'None', employeeName: 'Asha Menon', status: 'Present', swipeIn: '08:54 AM', totalMinutes: 502 },
-    { correction: 'Late swipe review', employeeName: 'Dev Shah', status: 'In Progress', swipeIn: '09:41 AM', totalMinutes: 388 },
-    { correction: 'Missing swipe out', employeeName: 'Irina George', status: 'Half Day', swipeIn: '09:12 AM', totalMinutes: 271 },
+    { correction: 'Late check-in review', employeeName: 'Dev Shah', status: 'In Progress', swipeIn: '09:41 AM', totalMinutes: 388 },
+    { correction: 'Missing check out', employeeName: 'Irina George', status: 'Half Day', swipeIn: '09:12 AM', totalMinutes: 271 },
     { correction: 'Absent anomaly', employeeName: 'Nikhil Rao', status: 'Absent', swipeIn: '--', totalMinutes: 0 },
   ]
 }

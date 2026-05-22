@@ -1,22 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import {
-  Bell,
-  CalendarDays,
-  ChevronDown,
-  CircleUserRound,
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  MoonStar,
-  Search,
-  SunMedium,
-  UserCheck2,
-} from 'lucide-react'
+import { Bell, CircleUserRound, LogOut, Menu, MoonStar, Search, SunMedium } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
-import { Badge } from '../../../shared/components/ui/badge'
 import { Button } from '../../../shared/components/ui/button'
-import { Card } from '../../../shared/components/ui/card'
+import { Input } from '../../../shared/components/ui/input'
 import { useUiStore } from '../../../shared/store/use-ui-store'
 import { useAuthStore } from '../../auth/store/use-auth-store'
 import { LeaveCalendarPage } from '../../calendar'
@@ -27,25 +14,10 @@ import {
   EmployeeHistoryPage,
 } from '../../employee'
 import { ManagerDashboard, TeamAttendancePage, TeamCalendarPage } from '../../manager'
-
-type ConsolePageType =
-  | 'dashboard'
-  | 'attendance-info'
-  | 'attendance-calendar'
-  | 'attendance-history'
-  | 'team-attendance'
-  | 'team-calendar'
-  | 'leave-calendar'
-
-const PAGE_TITLES: Record<ConsolePageType, string> = {
-  'attendance-calendar': 'Attendance calendar',
-  'attendance-history': 'Attendance history',
-  'attendance-info': 'Attendance info',
-  dashboard: 'Dashboard',
-  'leave-calendar': 'Leave and holidays',
-  'team-attendance': 'Team attendance',
-  'team-calendar': 'Team calendar',
-}
+import { AttendanceSidebar } from '../components/attendance-sidebar'
+import { AttendancePunchAction } from '../components/attendance-punch-action'
+import { RegularizationPage } from './regularization-page'
+import { getMobilePages, PAGE_TITLES, type ConsolePageType } from '../types/console-types'
 
 export function AttendanceConsole() {
   const [activePage, setActivePage] = useState<ConsolePageType>('dashboard')
@@ -57,8 +29,8 @@ export function AttendanceConsole() {
   const managerView = role === 'Manager' || role === 'Admin'
 
   return (
-    <div className={`teampilot-shell ${dark ? 'teampilot-dark' : ''} teampilot-grid flex min-h-screen`}>
-      <Sidebar
+    <div className={`teampilot-shell ${dark ? 'teampilot-dark' : ''} teampilot-grid flex min-h-screen border-t-[1.65rem] border-t-[#235e65]`}>
+      <AttendanceSidebar
         activePage={activePage}
         collapsed={collapsed}
         managerView={managerView}
@@ -73,16 +45,17 @@ export function AttendanceConsole() {
               <Button className="lg:hidden" onClick={() => setMobileMenu((value) => !value)} variant="outline">
                 <Menu className="size-4" />
               </Button>
-              <label className="flex h-11 w-full max-w-xl items-center gap-2 rounded-md border border-[#021333]/10 bg-[#f6f8ff] px-3">
-                <Search className="size-4 text-[#5c6b8e]" />
-                <input
+              <label className="relative w-full max-w-xl">
+                <Search className="pointer-events-none absolute left-3 top-3 size-4 text-[#5c6b8e]" />
+                <Input
                   aria-label="Search"
-                  className="min-w-0 flex-1 bg-transparent text-sm text-[#021333] outline-none"
+                  className="h-10 rounded-full pl-9"
                   placeholder="Search"
                 />
               </label>
             </div>
             <div className="flex items-center gap-1.5">
+              <AttendancePunchAction className="hidden sm:inline-flex" />
               <Button
                 aria-label="Toggle theme"
                 onClick={() => {
@@ -100,7 +73,7 @@ export function AttendanceConsole() {
                 <span className="block text-sm font-black text-[#021333]">{session?.user.name}</span>
                 <span className="block text-xs text-[#5c6b8e]">{role}</span>
               </span>
-              <span className="grid size-10 place-items-center rounded-full bg-[#eaf0ff] text-[#1e3fe3]">
+              <span className="grid size-9 place-items-center rounded-full bg-[#eaf0ff] text-[#1e3fe3]">
                 <CircleUserRound className="size-6" />
               </span>
               <Button
@@ -136,8 +109,8 @@ export function AttendanceConsole() {
           )}
         </header>
         <main className="p-4 sm:p-6">
-          <div className="mb-4">
-            <h1 className="text-3xl font-black text-[#021333]">{PAGE_TITLES[activePage]}</h1>
+          <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-[#5c6b8e]">
+            <span>{PAGE_TITLES[activePage]}</span>
           </div>
           <AnimatePresence mode="wait">
             <motion.div
@@ -147,7 +120,7 @@ export function AttendanceConsole() {
               key={`${role}-${activePage}`}
               transition={{ duration: 0.22, ease: 'easeOut' }}
             >
-              <Page activePage={activePage} managerView={managerView} name={session?.user.name ?? 'You'} role={role} />
+              <ConsolePage activePage={activePage} managerView={managerView} name={session?.user.name ?? 'You'} role={role} />
             </motion.div>
           </AnimatePresence>
         </main>
@@ -156,7 +129,7 @@ export function AttendanceConsole() {
   )
 }
 
-function Page({
+function ConsolePage({
   activePage,
   managerView,
   name,
@@ -169,6 +142,10 @@ function Page({
 }) {
   if (activePage === 'leave-calendar') {
     return <LeaveCalendarPage name={name} role={role} />
+  }
+
+  if (activePage === 'regularization') {
+    return <RegularizationPage managerView={managerView} />
   }
 
   if (activePage === 'attendance-info') {
@@ -192,148 +169,4 @@ function Page({
   }
 
   return managerView ? <ManagerDashboard /> : <EmployeeDashboard />
-}
-
-function Sidebar({
-  activePage,
-  collapsed,
-  managerView,
-  onCollapse,
-  onPage,
-  role,
-}: {
-  activePage: ConsolePageType
-  collapsed: boolean
-  managerView: boolean
-  onCollapse: () => void
-  onPage: (page: ConsolePageType) => void
-  role: string
-}) {
-  return (
-    <aside
-      className={`sticky top-0 hidden h-screen shrink-0 border-r border-[#021333]/10 bg-white p-4 transition-all lg:flex lg:flex-col ${
-        collapsed ? 'w-[5.5rem]' : 'w-72'
-      }`}
-    >
-      <div className="flex items-center gap-3">
-        <span className="grid size-12 shrink-0 place-items-center rounded-lg bg-[#1e3fe3] text-lg font-black text-white">T</span>
-        {!collapsed && (
-          <div>
-            <p className="text-xs font-black uppercase text-[#1e3fe3]">TeamPilot</p>
-            <p className="text-xl font-black text-[#021333]">Workspace</p>
-          </div>
-        )}
-      </div>
-      <nav className="mt-9 space-y-1" aria-label="Workspace">
-        <SideItem
-          collapsed={collapsed}
-          icon={<LayoutDashboard className="size-5" />}
-          label="Dashboard"
-          onClick={() => onPage('dashboard')}
-          selected={activePage === 'dashboard'}
-        />
-        <MenuGroup collapsed={collapsed} icon={<UserCheck2 className="size-5" />} label="Attendance">
-          <SubItem active={activePage === 'attendance-info'} label="Attendance info" onClick={() => onPage('attendance-info')} />
-          <SubItem active={activePage === 'attendance-calendar'} label="Calendar" onClick={() => onPage('attendance-calendar')} />
-          <SubItem active={activePage === 'attendance-history'} label="History" onClick={() => onPage('attendance-history')} />
-          {managerView && (
-            <>
-              <SubItem active={activePage === 'team-attendance'} label="Team attendance" onClick={() => onPage('team-attendance')} />
-              <SubItem active={activePage === 'team-calendar'} label="Team calendar" onClick={() => onPage('team-calendar')} />
-            </>
-          )}
-        </MenuGroup>
-        <MenuGroup collapsed={collapsed} icon={<CalendarDays className="size-5" />} label="Leave">
-          <SubItem active={activePage === 'leave-calendar'} label="Leave and holidays" onClick={() => onPage('leave-calendar')} />
-        </MenuGroup>
-      </nav>
-      <Card className="mt-auto p-3">
-        {!collapsed && (
-          <>
-            <Badge tone="brand">{role}</Badge>
-            <p className="mt-2 text-sm font-black text-[#021333]">TeamPilot</p>
-          </>
-        )}
-        <Button className="mt-3 w-full px-2" onClick={onCollapse} variant="outline">
-          <Menu className="size-4" />
-          {!collapsed && 'Collapse'}
-        </Button>
-      </Card>
-    </aside>
-  )
-}
-
-function MenuGroup({
-  children,
-  collapsed,
-  icon,
-  label,
-}: {
-  children: React.ReactNode
-  collapsed: boolean
-  icon: React.ReactNode
-  label: string
-}) {
-  return (
-    <div>
-      <div className="flex h-12 items-center gap-3 rounded-md px-3 text-sm font-black text-[#021333]">
-        {icon}
-        {!collapsed && (
-          <>
-            <span>{label}</span>
-            <ChevronDown className="ml-auto size-4 text-[#5c6b8e]" />
-          </>
-        )}
-      </div>
-      {!collapsed && <div className="ml-5 border-l border-[#021333]/10 pl-4">{children}</div>}
-    </div>
-  )
-}
-
-function SideItem({
-  collapsed,
-  icon,
-  label,
-  onClick,
-  selected,
-}: {
-  collapsed: boolean
-  icon: React.ReactNode
-  label: string
-  onClick: () => void
-  selected: boolean
-}) {
-  return (
-    <button
-      className={`flex h-12 w-full items-center gap-3 rounded-md px-3 text-left text-sm font-bold transition ${
-        selected ? 'bg-[#eaf0ff] text-[#021333]' : 'text-[#5c6b8e] hover:bg-[#f6f8ff]'
-      }`}
-      onClick={onClick}
-      title={label}
-      type="button"
-    >
-      {icon}
-      {!collapsed && label}
-    </button>
-  )
-}
-
-function SubItem({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
-  return (
-    <button
-      className={`block w-full rounded-md px-3 py-2 text-left text-sm font-semibold transition ${
-        active ? 'bg-[#eaf0ff] text-[#021333]' : 'text-[#5c6b8e] hover:text-[#021333]'
-      }`}
-      onClick={onClick}
-      type="button"
-    >
-      {label}
-    </button>
-  )
-}
-
-function getMobilePages(managerView: boolean): ConsolePageType[] {
-  return managerView
-    ? ['dashboard', 'team-attendance', 'team-calendar', 'leave-calendar']
-    : ['dashboard', 'attendance-info', 'attendance-calendar', 'attendance-history', 'leave-calendar']
 }

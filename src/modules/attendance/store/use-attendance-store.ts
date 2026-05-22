@@ -1,11 +1,11 @@
 import { create } from 'zustand'
-import type { IAttendanceRecord } from '../types/attendance-types'
+import type { AttendanceMoodType, IAttendanceRecord } from '../types/attendance-types'
 import { getDateKey, getLateMark, getWorkedMinutes } from '../utils/time-utils'
 
 interface IAttendanceState {
   today: IAttendanceRecord
-  swipeIn: () => void
-  swipeOut: () => void
+  checkIn: (mood?: AttendanceMoodType) => void
+  checkOut: () => void
 }
 
 function newToday(): IAttendanceRecord {
@@ -13,30 +13,38 @@ function newToday(): IAttendanceRecord {
     date: getDateKey(),
     employeeName: 'You',
     late: false,
+    punches: [],
     totalMinutes: 0,
   }
 }
 
 export const useAttendanceStore = create<IAttendanceState>((set) => ({
-  swipeIn: () =>
+  checkIn: (mood) =>
     set((state) => {
-      const swipeIn = new Date().toISOString()
+      const occurredAt = new Date().toISOString()
+      const punches = [...(state.today.punches ?? []), { action: 'Check In' as const, mood, occurredAt }]
       return {
         today: {
           ...state.today,
-          late: getLateMark(swipeIn),
-          swipeIn,
+          late: state.today.swipeIn ? state.today.late : getLateMark(occurredAt),
+          mood: mood ?? state.today.mood,
+          punches,
+          swipeIn: state.today.swipeIn ?? occurredAt,
         },
       }
     }),
-  swipeOut: () =>
+  checkOut: () =>
     set((state) => {
-      const swipeOut = new Date().toISOString()
-      const completeRecord = { ...state.today, swipeOut }
+      const occurredAt = new Date().toISOString()
+      const completeRecord = {
+        ...state.today,
+        punches: [...(state.today.punches ?? []), { action: 'Check Out' as const, occurredAt }],
+        swipeOut: occurredAt,
+      }
       return {
         today: {
           ...completeRecord,
-          totalMinutes: getWorkedMinutes(completeRecord, swipeOut),
+          totalMinutes: getWorkedMinutes(completeRecord, occurredAt),
         },
       }
     }),
