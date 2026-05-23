@@ -42,7 +42,7 @@ export function AttendanceConsole() {
         role={role}
       />
       <div className="min-w-0 flex-1">
-        <header className="sticky top-[1.65rem] z-20 border-b border-[#021333]/10 bg-white/90 px-4 py-2 backdrop-blur sm:px-5">
+        <header className="sticky top-0 z-20 border-b border-[#021333]/10 bg-white/90 px-4 py-2 backdrop-blur sm:px-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <Button className="lg:hidden" onClick={() => setMobileMenu((value) => !value)} variant="outline">

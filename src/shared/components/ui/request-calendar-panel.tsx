@@ -30,28 +30,28 @@ export function RequestCalendarPanel({
   ]
 
   return (
-    <div className="h-full rounded-lg border border-[#021333]/10 bg-[#f6f8ff] p-4">
+    <div className="rounded-lg border border-[#021333]/10 bg-[#f6f8ff] p-3">
       <div className="flex items-start gap-2">
-        <span className="grid size-9 shrink-0 place-items-center rounded-md bg-white text-[#1e3fe3] shadow-sm">
+        <span className="grid size-7 shrink-0 place-items-center rounded-md bg-white text-[#1e3fe3] shadow-sm">
           <CalendarDays className="size-4" />
         </span>
         <div>
-          <h3 className="text-lg font-black text-[#021333]">{title}</h3>
-          {helper && <p className="mt-1 text-xs font-semibold text-[#5c6b8e]">{helper}</p>}
+          <h3 className="text-sm font-black text-[#021333]">{title}</h3>
+          {helper && <p className="mt-1 text-[11px] font-semibold text-[#5c6b8e]">{helper}</p>}
         </div>
       </div>
 
-      <div className="mt-5 rounded-lg border border-[#021333]/10 bg-white p-3">
-        <div className="mb-3 text-center text-sm font-black text-[#021333]">{monthLabel}</div>
-        <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-black text-[#5c6b8e]">
+      <div className="mt-4 rounded-lg border border-[#021333]/10 bg-white p-2">
+        <div className="mb-2 text-center text-sm font-black text-[#021333]">{monthLabel}</div>
+        <div className="grid grid-cols-7 gap-0.5 text-center text-[10px] font-black text-[#5c6b8e]">
           {WEEKDAYS.map((weekday) => (
             <span key={weekday}>{weekday}</span>
           ))}
         </div>
-        <div className="mt-2 grid grid-cols-7 gap-1">
+        <div className="mt-2 grid grid-cols-7 gap-1.5">
           {cells.map((cell) => {
             if (!cell.day) {
-              return <span className="h-9" key={cell.key} />
+              return <span className="h-8" key={cell.key} />
             }
 
             const date = toIsoDate(year, month, cell.day)
@@ -60,7 +60,7 @@ export function RequestCalendarPanel({
 
             return (
               <button
-                className={`relative grid h-9 place-items-center rounded-md text-sm font-bold transition ${
+                className={`relative grid h-8 place-items-center rounded-md text-xs font-bold transition ${
                   selected
                     ? 'bg-[#1e3fe3] text-white shadow-md shadow-[#1e3fe3]/20'
                     : 'text-[#021333] hover:bg-[#eaf0ff] hover:text-[#1e3fe3]'

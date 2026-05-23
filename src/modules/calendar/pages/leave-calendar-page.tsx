@@ -156,9 +156,11 @@ function ApplyLeaveDialog({
     defaultValues: {
       emergencyContact: '',
       fromDate: '',
+      fromTime: '',
       leaveType: 'Casual leave',
       reason: '',
       toDate: '',
+      toTime: '',
     },
     mode: 'onChange',
     resolver: zodResolver(leaveRequestSchema),
@@ -171,9 +173,11 @@ function ApplyLeaveDialog({
     form.reset({
       emergencyContact: '',
       fromDate: '',
+      fromTime: '',
       leaveType: values.leaveType,
       reason: '',
       toDate: '',
+      toTime: '',
     })
   }
 
@@ -194,14 +198,14 @@ function ApplyLeaveDialog({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="max-w-6xl p-0">
+      <DialogContent className="max-w-3xl p-0">
         <DialogHeader className="border-b border-[#021333]/10 bg-[#f6f8ff] px-6 py-5">
           <DialogTitle className="flex items-center gap-2 text-2xl">
             <CalendarPlus2 className="size-6 text-[#1e3fe3]" />
             Apply leave
           </DialogTitle>
         </DialogHeader>
-        <div className="grid gap-5 p-6 lg:grid-cols-[minmax(0,1fr)_26rem]">
+        <div className="grid gap-5 p-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
           <RequestCalendarPanel
             helper="Select the start date first, then choose the return date."
             markers={[
@@ -215,8 +219,12 @@ function ApplyLeaveDialog({
           />
           <form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
             <LeaveTypeField formControl={form.control} />
-            <Field error={form.formState.errors.fromDate?.message} label="From" register={form.register('fromDate')} type="date" />
-            <Field error={form.formState.errors.toDate?.message} label="To" register={form.register('toDate')} type="date" />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field error={form.formState.errors.fromDate?.message} label="From" register={form.register('fromDate')} type="date" />
+              <Field error={form.formState.errors.toDate?.message} label="To" register={form.register('toDate')} type="date" />
+              <Field error={form.formState.errors.fromTime?.message} label="From time" register={form.register('fromTime')} type="time" />
+              <Field error={form.formState.errors.toTime?.message} label="To time" register={form.register('toTime')} type="time" />
+            </div>
             <Field error={form.formState.errors.emergencyContact?.message} label="Emergency contact" register={form.register('emergencyContact')} />
             <Label>
               Reason
@@ -227,7 +235,7 @@ function ApplyLeaveDialog({
               />
               {form.formState.errors.reason?.message && <span className="mt-1 block text-xs font-semibold text-rose-600">{form.formState.errors.reason.message}</span>}
             </Label>
-            <Button className="w-full" type="submit">
+            <Button type="submit">
               Submit request
             </Button>
           </form>
@@ -333,55 +341,124 @@ function MyLeaveRequestsPage({
   leaveRequests: ILeaveRequest[]
   onCreate: (values: LeaveRequestSchemaType) => void
 }) {
-  const [applyOpen, setApplyOpen] = useState(false)
+  const holidays = useLeaveCalendarStore((state) => state.holidays)
+  const form = useForm<LeaveRequestSchemaType>({
+    defaultValues: {
+      emergencyContact: '',
+      fromDate: '',
+      fromTime: '',
+      leaveType: 'Casual leave',
+      reason: '',
+      toDate: '',
+      toTime: '',
+    },
+    mode: 'onChange',
+    resolver: zodResolver(leaveRequestSchema),
+  })
+
+  const fromDate = useWatch({ control: form.control, name: 'fromDate' })
+  const toDate = useWatch({ control: form.control, name: 'toDate' })
+
+  function selectDate(date: string) {
+    if (!fromDate || (fromDate && toDate)) {
+      form.setValue('fromDate', date, { shouldDirty: true, shouldValidate: true })
+      form.setValue('toDate', '', { shouldDirty: true, shouldValidate: true })
+      return
+    }
+
+    if (date < fromDate) {
+      form.setValue('fromDate', date, { shouldDirty: true, shouldValidate: true })
+      return
+    }
+
+    form.setValue('toDate', date, { shouldDirty: true, shouldValidate: true })
+  }
+
+  function resetForm() {
+    form.reset({
+      emergencyContact: '',
+      fromDate: '',
+      fromTime: '',
+      leaveType: 'Casual leave',
+      reason: '',
+      toDate: '',
+      toTime: '',
+    })
+  }
+
+  function submit(values: LeaveRequestSchemaType) {
+    onCreate(values)
+    resetForm()
+  }
+
+  const markers = holidays.map((holiday) => ({
+    date: holiday.date,
+    label: holiday.name,
+    tone: 'brand' as const,
+  }))
 
   return (
     <>
-      <Card className="p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <LeaveToolbar filters={['Status', 'Leave Type', 'Created By']} />
-          <Button onClick={() => setApplyOpen(true)}>
-            <CalendarPlus2 className="size-4" />
-            Apply for Leave
-          </Button>
+      <Card className="overflow-hidden">
+        <div className="border-b border-[#021333]/10 bg-[#f6f8ff] px-6 py-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-lg font-black text-[#021333]">Create leave request</p>
+              <p className="mt-2 text-sm text-[#5c6b8e]">Pick the leave date range before submitting.</p>
+            </div>
+            <Button variant="outline" onClick={resetForm} type="button">
+              Cancel
+            </Button>
+          </div>
         </div>
-        <div className="mt-4 overflow-x-auto rounded-lg border border-[#021333]/10">
-          <Table className="min-w-[840px] border-separate border-spacing-0">
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                {['Employee', 'Leave Type', 'Dates', 'Days', 'Status', 'Action'].map((heading) => (
-                  <TableHead className="border-b border-r border-[#021333]/10 bg-white last:border-r-0" key={heading}>
-                    {heading}
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {leaveRequests.map((request) => (
-                <TableRow key={request.id}>
-                  <TableCell className="border-r border-[#021333]/10 font-semibold text-[#1e3fe3] underline decoration-[#1e3fe3]/30">
-                    {request.employee}
-                  </TableCell>
-                  <TableCell className="border-r border-[#021333]/10">{request.leaveType}</TableCell>
-                  <TableCell className="border-r border-[#021333]/10 text-[#5c6b8e]">
-                    {request.fromDate} - {request.toDate}
-                  </TableCell>
-                  <TableCell className="border-r border-[#021333]/10">{String(request.days).padStart(2, '0')}</TableCell>
-                  <TableCell className="border-r border-[#021333]/10"><LeaveStatusBadge status={request.status} /></TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2 text-[#5c6b8e]">
-                      <Edit3 className="size-4" />
-                      <Trash2 className="size-4 text-rose-500" />
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+
+        <div className="grid gap-5 p-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <RequestCalendarPanel
+            helper="Select the start date first, then choose the return date."
+            markers={markers}
+            onSelectDate={selectDate}
+            selectedDates={[fromDate, toDate].filter(Boolean)}
+            title="My attendance calendar"
+          />
+
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-[#021333]/10 bg-white p-4 shadow-sm">
+              <p className="text-sm font-bold uppercase text-[#5c6b8e]">Request type</p>
+              <p className="mt-3 text-xl font-black text-[#021333]">{form.watch('leaveType') || 'Select leave type'}</p>
+            </div>
+
+            <form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
+              <LeaveTypeField formControl={form.control} />
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field error={form.formState.errors.fromDate?.message} label="From" register={form.register('fromDate')} type="date" />
+                <Field error={form.formState.errors.toDate?.message} label="To" register={form.register('toDate')} type="date" />
+                <Field error={form.formState.errors.fromTime?.message} label="From time" register={form.register('fromTime')} type="time" />
+                <Field error={form.formState.errors.toTime?.message} label="To time" register={form.register('toTime')} type="time" />
+              </div>
+
+              <Field error={form.formState.errors.emergencyContact?.message} label="Emergency contact" register={form.register('emergencyContact')} />
+
+              <Label>
+                Reason
+                <textarea
+                  aria-invalid={Boolean(form.formState.errors.reason)}
+                  className="mt-1 min-h-32 w-full rounded-md border border-[#021333]/15 bg-white px-3 py-2 text-sm text-[#021333] outline-none transition focus:border-[#1e3fe3] focus:ring-2 focus:ring-[#1e3fe3]/15"
+                  {...form.register('reason')}
+                />
+                {form.formState.errors.reason?.message && <span className="mt-1 block text-xs font-semibold text-rose-600">{form.formState.errors.reason?.message}</span>}
+              </Label>
+
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                <Button variant="outline" onClick={resetForm} type="button">
+                  Cancel
+                </Button>
+                <Button type="submit">Submit</Button>
+              </div>
+            </form>
+          </div>
         </div>
-        <Pagination />
       </Card>
-      <ApplyLeaveDialog onCreate={onCreate} onOpenChange={setApplyOpen} open={applyOpen} />
     </>
   )
 }

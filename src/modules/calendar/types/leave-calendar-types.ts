@@ -31,9 +31,11 @@ export interface ILeaveRequest {
   employee: string
   emergencyContact?: string
   fromDate: string
+  fromTime?: string
   id: string
   leaveType: string
   reason?: string
   status: LeaveStatusType
   toDate: string
+  toTime?: string
 }

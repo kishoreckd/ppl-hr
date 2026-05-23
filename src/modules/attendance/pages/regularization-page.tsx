@@ -90,7 +90,7 @@ export function RegularizationPage({
   const [status, setStatus] = useState<RegularizationStatusType | 'All' | 'Pending'>('All')
   const [manager, setManager] = useState('All')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
-  const [requestDialogOpen, setRequestDialogOpen] = useState(false)
+  const [showCreateForm, setShowCreateForm] = useState(false)
   const [approvalAction, setApprovalAction] = useState<RegularizationActionType | null>(null)
 
   const rows = useMemo(
@@ -162,7 +162,7 @@ export function RegularizationPage({
     }
 
     setRequests((current) => [newRequest, ...current])
-    setRequestDialogOpen(false)
+    setShowCreateForm(false)
     toast.success('Regularization request created successfully.')
   }
 
@@ -220,6 +220,12 @@ export function RegularizationPage({
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({ columns, data: rows, getCoreRowModel: getCoreRowModel() })
 
+  if (showCreateForm) {
+    return (
+      <CreateRegularizationPage onCancel={() => setShowCreateForm(false)} onCreate={createRequest} />
+    )
+  }
+
   if (!managerView) {
     return (
       <>
@@ -240,7 +246,7 @@ export function RegularizationPage({
                 />
               </label>
             </div>
-            <Button onClick={() => setRequestDialogOpen(true)}>Add Regularization</Button>
+            <Button onClick={() => setShowCreateForm(true)}>Apply</Button>
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -326,11 +332,6 @@ export function RegularizationPage({
           </div>
         </Card>
 
-        <NewRegularizationDialog
-          onCreate={createRequest}
-          onOpenChange={setRequestDialogOpen}
-          open={requestDialogOpen}
-        />
       </>
     )
   }
@@ -362,7 +363,7 @@ export function RegularizationPage({
                 selectedCount={selectedCount}
               />
             )}
-            <Button onClick={() => setRequestDialogOpen(true)}>New request</Button>
+            <Button onClick={() => setShowCreateForm(true)}>Apply</Button>
           </div>
         </div>
 
@@ -451,11 +452,6 @@ export function RegularizationPage({
         </div>
       </Card>
 
-      <NewRegularizationDialog
-        onCreate={createRequest}
-        onOpenChange={setRequestDialogOpen}
-        open={requestDialogOpen}
-      />
       <ApprovalDialog
         action={approvalAction}
         onOpenChange={(open) => {
@@ -544,14 +540,12 @@ function ActionIcon({
   )
 }
 
-function NewRegularizationDialog({
+function CreateRegularizationPage({
   onCreate,
-  onOpenChange,
-  open,
+  onCancel,
 }: {
   onCreate: (values: RegularizationRequestSchemaType) => void
-  onOpenChange: (open: boolean) => void
-  open: boolean
+  onCancel: () => void
 }) {
   const form = useForm<RegularizationRequestSchemaType>({
     defaultValues: {
@@ -598,61 +592,65 @@ function NewRegularizationDialog({
   }
 
   return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="max-w-6xl p-0">
-        <DialogHeader className="border-b border-[#021333]/10 bg-[#f6f8ff] px-5 py-4">
-          <DialogTitle className="text-lg">Create regularization request</DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_28rem]">
-          <RequestCalendarPanel
-            helper="Pick the missing attendance date range before submitting."
-            markers={[
-              { date: '2026-05-19', label: 'A:A | 3h 36m', tone: 'danger' },
-              { date: '2026-05-20', label: 'P:A | 7h 27m', tone: 'warning' },
-              { date: '2026-05-21', label: 'P:P | 9h 26m', tone: 'success' },
-            ]}
-            onSelectDate={selectDate}
-            selectedDates={[fromDate, toDate].filter(Boolean)}
-            title="My attendance calendar"
-          />
-          <form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
-            <FieldError error={form.formState.errors.requestTitle?.message}>
-              <Input aria-invalid={Boolean(form.formState.errors.requestTitle)} {...form.register('requestTitle')} placeholder="Request title" />
-            </FieldError>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <FieldError error={form.formState.errors.fromDate?.message}>
-                <Input aria-invalid={Boolean(form.formState.errors.fromDate)} type="date" {...form.register('fromDate')} />
-              </FieldError>
-              <FieldError error={form.formState.errors.toDate?.message}>
-                <Input aria-invalid={Boolean(form.formState.errors.toDate)} type="date" {...form.register('toDate')} />
-              </FieldError>
-              <FieldError error={form.formState.errors.from?.message}>
-                <Input aria-invalid={Boolean(form.formState.errors.from)} {...form.register('from')} placeholder="From time" />
-              </FieldError>
-              <FieldError error={form.formState.errors.to?.message}>
-                <Input aria-invalid={Boolean(form.formState.errors.to)} {...form.register('to')} placeholder="To time" />
-              </FieldError>
-            </div>
-            <FieldError error={form.formState.errors.emergencyContact?.message}>
-              <Input aria-invalid={Boolean(form.formState.errors.emergencyContact)} {...form.register('emergencyContact')} placeholder="Emergency contact" />
-            </FieldError>
-            <FieldError error={form.formState.errors.reason?.message}>
-              <textarea
-                className="min-h-28 w-full rounded-md border border-[#021333]/15 bg-white px-3 py-2 text-sm text-[#021333] outline-none transition focus:border-[#1e3fe3] focus:ring-2 focus:ring-[#1e3fe3]/15"
-                {...form.register('reason')}
-                placeholder="Add reason..."
-              />
-            </FieldError>
-            <div className="flex justify-end gap-2">
-              <Button onClick={() => onOpenChange(false)} type="button" variant="outline">
-                Cancel
-              </Button>
-              <Button type="submit">Submit</Button>
-            </div>
-          </form>
+    <Card className="overflow-hidden p-4">
+      <div className="flex items-center justify-between gap-3 border-b border-[#021333]/10 bg-[#f6f8ff] px-5 py-4">
+        <div>
+          <h2 className="text-lg font-black text-[#021333]">Apply For Regularization</h2>
+          <p className="text-sm text-[#5c6b8e]">Pick the missing attendance date range before submitting.</p>
         </div>
-      </DialogContent>
-    </Dialog>
+        <Button variant="outline" onClick={onCancel} type="button">
+          Cancel
+        </Button>
+      </div>
+      <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <RequestCalendarPanel
+          helper="Pick the missing attendance date range before submitting."
+          markers={[
+            { date: '2026-05-19', label: 'A:A | 3h 36m', tone: 'danger' },
+            { date: '2026-05-20', label: 'P:A | 7h 27m', tone: 'warning' },
+            { date: '2026-05-21', label: 'P:P | 9h 26m', tone: 'success' },
+          ]}
+          onSelectDate={selectDate}
+          selectedDates={[fromDate, toDate].filter(Boolean)}
+          title="My attendance calendar"
+        />
+        <form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
+          <FieldError error={form.formState.errors.requestTitle?.message}>
+            <Input aria-invalid={Boolean(form.formState.errors.requestTitle)} {...form.register('requestTitle')} placeholder="Request title" />
+          </FieldError>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <FieldError error={form.formState.errors.fromDate?.message}>
+              <Input aria-invalid={Boolean(form.formState.errors.fromDate)} type="date" {...form.register('fromDate')} />
+            </FieldError>
+            <FieldError error={form.formState.errors.toDate?.message}>
+              <Input aria-invalid={Boolean(form.formState.errors.toDate)} type="date" {...form.register('toDate')} />
+            </FieldError>
+            <FieldError error={form.formState.errors.from?.message}>
+              <Input aria-invalid={Boolean(form.formState.errors.from)} {...form.register('from')} placeholder="From time" />
+            </FieldError>
+            <FieldError error={form.formState.errors.to?.message}>
+              <Input aria-invalid={Boolean(form.formState.errors.to)} {...form.register('to')} placeholder="To time" />
+            </FieldError>
+          </div>
+          <FieldError error={form.formState.errors.emergencyContact?.message}>
+            <Input aria-invalid={Boolean(form.formState.errors.emergencyContact)} {...form.register('emergencyContact')} placeholder="Emergency contact" />
+          </FieldError>
+          <FieldError error={form.formState.errors.reason?.message}>
+            <textarea
+              className="min-h-28 w-full rounded-md border border-[#021333]/15 bg-white px-3 py-2 text-sm text-[#021333] outline-none transition focus:border-[#1e3fe3] focus:ring-2 focus:ring-[#1e3fe3]/15"
+              {...form.register('reason')}
+              placeholder="Add reason..."
+            />
+          </FieldError>
+          <div className="flex justify-end gap-2">
+            <Button onClick={onCancel} type="button" variant="outline">
+              Cancel
+            </Button>
+            <Button type="submit">Submit</Button>
+          </div>
+        </form>
+      </div>
+    </Card>
   )
 }
 

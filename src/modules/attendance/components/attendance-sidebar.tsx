@@ -57,7 +57,7 @@ export function AttendanceSidebar({
   return (
     <motion.aside
       animate={{ width: collapsed ? 68 : 220 }}
-      className="sticky top-[1.65rem] z-30 hidden h-[calc(100vh-1.65rem)] shrink-0 overflow-hidden border-r border-[#021333]/10 bg-white lg:flex lg:flex-col"
+      className="sticky top-0 z-30 hidden h-screen shrink-0 overflow-hidden border-r border-[#021333]/10 bg-white lg:flex lg:flex-col"
       transition={{ damping: 28, stiffness: 260, type: 'spring' }}
     >
       <button

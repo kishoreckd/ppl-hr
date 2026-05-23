@@ -2,6 +2,17 @@ import { create } from 'zustand'
 import type { HolidaySchemaType, LeaveRequestSchemaType } from '../validations/leave-calendar-schema'
 import type { IHoliday, ILeaveRequest, LeaveStatusType } from '../types/leave-calendar-types'
 
+function calculateLeaveDays(fromDate: string, toDate: string) {
+  const start = new Date(fromDate)
+  const end = new Date(toDate)
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return 1
+  }
+
+  const diff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+  return diff > 0 ? diff : 1
+}
+
 interface ILeaveCalendarState {
   holidays: IHoliday[]
   leaveRequests: ILeaveRequest[]
@@ -88,7 +99,7 @@ export const useLeaveCalendarStore = create<ILeaveCalendarState>((set) => ({
         {
           ...request,
           createdBy: employee,
-          days: 2,
+          days: calculateLeaveDays(request.fromDate, request.toDate),
           employee,
           id: `leave-${Date.now()}`,
           status: 'New Request',
