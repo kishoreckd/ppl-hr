@@ -1,12 +1,13 @@
 import { create } from 'zustand'
 import type { HolidaySchemaType, LeaveRequestSchemaType } from '../validations/leave-calendar-schema'
-import type { IHoliday, ILeaveRequest } from '../types/leave-calendar-types'
+import type { IHoliday, ILeaveRequest, LeaveStatusType } from '../types/leave-calendar-types'
 
 interface ILeaveCalendarState {
   holidays: IHoliday[]
   leaveRequests: ILeaveRequest[]
   addHoliday: (holiday: HolidaySchemaType) => void
   approveLeave: (id: string) => void
+  updateLeaveStatus: (ids: string[], status: LeaveStatusType) => void
   submitLeave: (employee: string, request: LeaveRequestSchemaType) => void
 }
 
@@ -33,28 +34,52 @@ export const useLeaveCalendarStore = create<ILeaveCalendarState>((set) => ({
   ],
   leaveRequests: [
     {
+      createdBy: 'Dev Shah',
+      days: 2,
       employee: 'Dev Shah',
+      emergencyContact: '+91 98765 43210',
       fromDate: '2026-05-27',
       id: 'leave-1',
       leaveType: 'Casual leave',
-      status: 'Pending',
+      reason: 'Family event',
+      status: 'New Request',
       toDate: '2026-05-28',
     },
     {
+      createdBy: 'Irina George',
+      days: 1,
       employee: 'Irina George',
+      emergencyContact: '+91 98765 43210',
       fromDate: '2026-06-02',
       id: 'leave-2',
       leaveType: 'Sick leave',
-      status: 'Pending',
+      reason: 'Medical appointment',
+      status: 'On Hold',
       toDate: '2026-06-02',
     },
     {
+      createdBy: 'You',
+      days: 1,
       employee: 'You',
+      emergencyContact: '+91 98765 43210',
       fromDate: '2026-05-16',
       id: 'leave-3',
       leaveType: 'Earned leave',
+      reason: 'Personal work',
       status: 'Approved',
       toDate: '2026-05-16',
+    },
+    {
+      createdBy: 'Kishore Kumar DCKAP',
+      days: 2,
+      employee: 'Kishore Kumar DCKAP',
+      emergencyContact: '+91 98765 43210',
+      fromDate: '2026-05-21',
+      id: 'leave-4',
+      leaveType: 'Casual leave',
+      reason: 'Travel plan',
+      status: 'Rejected',
+      toDate: '2026-05-22',
     },
   ],
   submitLeave: (employee, request) =>
@@ -62,11 +87,19 @@ export const useLeaveCalendarStore = create<ILeaveCalendarState>((set) => ({
       leaveRequests: [
         {
           ...request,
+          createdBy: employee,
+          days: 2,
           employee,
           id: `leave-${Date.now()}`,
-          status: 'Pending',
+          status: 'New Request',
         },
         ...state.leaveRequests,
       ],
+    })),
+  updateLeaveStatus: (ids, status) =>
+    set((state) => ({
+      leaveRequests: state.leaveRequests.map((request) =>
+        ids.includes(request.id) ? { ...request, status } : request,
+      ),
     })),
 }))

@@ -3,6 +3,7 @@ import { Bell, CircleUserRound, LogOut, Menu, MoonStar, Search, SunMedium } from
 import { useState } from 'react'
 import { toast } from 'react-toastify'
 import { Button } from '../../../shared/components/ui/button'
+import { Breadcrumb } from '../../../shared/components/ui/breadcrumb'
 import { Input } from '../../../shared/components/ui/input'
 import { useUiStore } from '../../../shared/store/use-ui-store'
 import { useAuthStore } from '../../auth/store/use-auth-store'
@@ -14,10 +15,11 @@ import {
   EmployeeHistoryPage,
 } from '../../employee'
 import { ManagerDashboard, TeamAttendancePage, TeamCalendarPage } from '../../manager'
+import { ProfilePage } from '../../profile'
 import { AttendanceSidebar } from '../components/attendance-sidebar'
 import { AttendancePunchAction } from '../components/attendance-punch-action'
 import { RegularizationPage } from './regularization-page'
-import { getMobilePages, PAGE_TITLES, type ConsolePageType } from '../types/console-types'
+import { getMobilePages, getPageBreadcrumb, PAGE_TITLES, type ConsolePageType } from '../types/console-types'
 
 export function AttendanceConsole() {
   const [activePage, setActivePage] = useState<ConsolePageType>('dashboard')
@@ -25,11 +27,12 @@ export function AttendanceConsole() {
   const [mobileMenu, setMobileMenu] = useState(false)
   const { session, setSession } = useAuthStore()
   const { dark, toggleTheme } = useUiStore()
-  const role = session?.user.role ?? 'Employee'
+  const user = session?.user ?? { email: 'employee@cxontology.com', name: 'You', role: 'Employee' as const }
+  const role = user.role
   const managerView = role === 'Manager' || role === 'Admin'
 
   return (
-    <div className={`teampilot-shell ${dark ? 'teampilot-dark' : ''} teampilot-grid flex min-h-screen border-t-[1.65rem] border-t-[#235e65]`}>
+    <div className={`teampilot-shell ${dark ? 'teampilot-dark' : ''} teampilot-grid flex min-h-screen`}>
       <AttendanceSidebar
         activePage={activePage}
         collapsed={collapsed}
@@ -39,7 +42,7 @@ export function AttendanceConsole() {
         role={role}
       />
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-20 border-b border-[#021333]/10 bg-white/90 px-4 py-3 backdrop-blur sm:px-6">
+        <header className="sticky top-[1.65rem] z-20 border-b border-[#021333]/10 bg-white/90 px-4 py-2 backdrop-blur sm:px-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <Button className="lg:hidden" onClick={() => setMobileMenu((value) => !value)} variant="outline">
@@ -49,7 +52,7 @@ export function AttendanceConsole() {
                 <Search className="pointer-events-none absolute left-3 top-3 size-4 text-[#5c6b8e]" />
                 <Input
                   aria-label="Search"
-                  className="h-10 rounded-full pl-9"
+                  className="h-9 rounded-full pl-9"
                   placeholder="Search"
                 />
               </label>
@@ -70,12 +73,17 @@ export function AttendanceConsole() {
                 <Bell className="size-5" />
               </Button>
               <span className="hidden text-right sm:block">
-                <span className="block text-sm font-black text-[#021333]">{session?.user.name}</span>
+                <span className="block text-sm font-black text-[#021333]">{user.name}</span>
                 <span className="block text-xs text-[#5c6b8e]">{role}</span>
               </span>
-              <span className="grid size-9 place-items-center rounded-full bg-[#eaf0ff] text-[#1e3fe3]">
+              <button
+                aria-label="Open profile"
+                className="grid size-9 place-items-center rounded-full bg-[#eaf0ff] text-[#1e3fe3] transition hover:ring-2 hover:ring-[#1e3fe3]/20"
+                onClick={() => setActivePage('profile')}
+                type="button"
+              >
                 <CircleUserRound className="size-6" />
-              </span>
+              </button>
               <Button
                 aria-label="Logout"
                 onClick={() => {
@@ -108,10 +116,8 @@ export function AttendanceConsole() {
             </div>
           )}
         </header>
-        <main className="p-4 sm:p-6">
-          <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-[#5c6b8e]">
-            <span>{PAGE_TITLES[activePage]}</span>
-          </div>
+        <main className="p-3 sm:p-4">
+          <Breadcrumb className="mb-3" items={getPageBreadcrumb(activePage).map((label) => ({ label }))} onHome={() => setActivePage('dashboard')} />
           <AnimatePresence mode="wait">
             <motion.div
               animate={{ opacity: 1, y: 0 }}
@@ -120,7 +126,7 @@ export function AttendanceConsole() {
               key={`${role}-${activePage}`}
               transition={{ duration: 0.22, ease: 'easeOut' }}
             >
-              <ConsolePage activePage={activePage} managerView={managerView} name={session?.user.name ?? 'You'} role={role} />
+              <ConsolePage activePage={activePage} managerView={managerView} name={user.name} onPage={setActivePage} role={role} user={user} />
             </motion.div>
           </AnimatePresence>
         </main>
@@ -133,19 +139,43 @@ function ConsolePage({
   activePage,
   managerView,
   name,
+  onPage,
   role,
+  user,
 }: {
   activePage: ConsolePageType
   managerView: boolean
   name: string
+  onPage: (page: ConsolePageType) => void
   role: 'Employee' | 'Manager' | 'Admin'
+  user: {
+    email: string
+    name: string
+    role: 'Employee' | 'Manager' | 'Admin'
+  }
 }) {
+  if (activePage === 'profile') {
+    return <ProfilePage user={user} />
+  }
+
   if (activePage === 'leave-calendar') {
-    return <LeaveCalendarPage name={name} role={role} />
+    return <LeaveCalendarPage name={name} page="calendar" role={role} />
+  }
+
+  if (activePage === 'leave-balance') {
+    return <LeaveCalendarPage name={name} page="balance" role={role} />
+  }
+
+  if (activePage === 'leave-application') {
+    return <LeaveCalendarPage name={name} page="application" role={role} />
+  }
+
+  if (activePage === 'leave-admin') {
+    return <LeaveCalendarPage name={name} page="admin" role={role} />
   }
 
   if (activePage === 'regularization') {
-    return <RegularizationPage managerView={managerView} />
+    return <RegularizationPage managerView={managerView} user={user} />
   }
 
   if (activePage === 'attendance-info') {
@@ -153,7 +183,7 @@ function ConsolePage({
   }
 
   if (activePage === 'attendance-calendar') {
-    return <EmployeeCalendarPage />
+    return <EmployeeCalendarPage onRegularize={() => onPage('regularization')} />
   }
 
   if (activePage === 'attendance-history') {
@@ -161,12 +191,12 @@ function ConsolePage({
   }
 
   if (activePage === 'team-attendance') {
-    return managerView ? <TeamAttendancePage /> : <EmployeeDashboard />
+    return managerView ? <TeamAttendancePage /> : <EmployeeDashboard onOpenLeaveApplication={() => onPage('leave-application')} />
   }
 
   if (activePage === 'team-calendar') {
     return managerView ? <TeamCalendarPage /> : <EmployeeCalendarPage />
   }
 
-  return managerView ? <ManagerDashboard /> : <EmployeeDashboard />
+  return managerView ? <ManagerDashboard /> : <EmployeeDashboard onOpenLeaveApplication={() => onPage('leave-application')} />
 }

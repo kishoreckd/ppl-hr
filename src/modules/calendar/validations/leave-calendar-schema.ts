@@ -7,8 +7,10 @@ export const holidaySchema = z.object({
 })
 
 export const leaveRequestSchema = z.object({
+  emergencyContact: z.string().trim().min(8, 'Add an emergency contact.'),
   fromDate: z.string().min(1, 'Select a start date.'),
   leaveType: z.string().min(1, 'Select leave type.'),
+  reason: z.string().trim().min(10, 'Add a reason for leave.'),
   toDate: z.string().min(1, 'Select an end date.'),
 })
 

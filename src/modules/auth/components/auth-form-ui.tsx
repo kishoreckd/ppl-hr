@@ -47,8 +47,8 @@ export function AuthTextField({
   return (
     <Label>
       {label}
-      <Input className="mt-1.5 h-11" type={type} {...registration} />
-      {error && <span className="mt-1 block text-xs text-rose-700">{error}</span>}
+      <Input aria-invalid={Boolean(error)} className="mt-1.5 h-11" type={type} {...registration} />
+      {error && <span className="mt-1 block text-xs font-semibold text-rose-600">{error}</span>}
     </Label>
   )
 }
@@ -75,7 +75,7 @@ export function SignupRoleField({
           <SelectItem value="Admin">Admin</SelectItem>
         </SelectContent>
       </Select>
-      {errors.role?.message && <span className="mt-1 block text-xs text-rose-700">{errors.role.message}</span>}
+      {errors.role?.message && <span className="mt-1 block text-xs font-semibold text-rose-600">{errors.role.message}</span>}
     </Label>
   )
 }

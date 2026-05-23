@@ -2,12 +2,12 @@ import { CalendarCheck2, Clock9, PlaneTakeoff, ShieldAlert } from 'lucide-react'
 import { Badge } from '../../../shared/components/ui/badge'
 import { Card } from '../../../shared/components/ui/card'
 import { Skeleton } from '../../../shared/components/ui/skeleton'
-import { SwipeConsole } from '../../attendance/components/swipe-console'
+import { RecentSwipesPanel, SwipeConsole } from '../../attendance/components/swipe-console'
 import { useAttendanceRecords } from '../../attendance/hooks/use-attendance-data'
 import { useAttendanceStore } from '../../attendance/store/use-attendance-store'
 import { formatMinutes, getAttendanceStatus, getWorkedMinutes } from '../../attendance/utils/time-utils'
 
-export function EmployeeDashboard() {
+export function EmployeeDashboard({ onOpenLeaveApplication }: { onOpenLeaveApplication?: () => void }) {
   const recordsQuery = useAttendanceRecords()
   const today = useAttendanceStore((state) => state.today)
 
@@ -30,43 +30,27 @@ export function EmployeeDashboard() {
         <Summary icon={<PlaneTakeoff className="size-5" />} label="Leave balance" value="11 days" />
       </section>
       <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+        <RecentSwipesPanel />
         <Card className="p-4 sm:p-5">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-bold text-[#5c6b8e]">This week</p>
-              <h2 className="mt-1 text-2xl font-black text-[#021333]">Attendance rhythm</h2>
-            </div>
-            <Badge tone="success">On track</Badge>
-          </div>
-          <div className="mt-5 grid grid-cols-5 gap-2">
-            {[92, 88, 53, 100, 76].map((height, index) => (
-              <div className="flex h-40 flex-col justify-end rounded-md bg-[#f6f8ff] p-2" key={height}>
-                <span
-                  className="rounded bg-[#1e3fe3]"
-                  style={{ height: `${height}%`, opacity: 0.42 + index * 0.12 }}
-                />
-                <span className="mt-2 text-center text-xs font-bold text-[#5c6b8e]">
-                  {['M', 'T', 'W', 'T', 'F'][index]}
-                </span>
-              </div>
-            ))}
-          </div>
-        </Card>
-        <Card className="p-4 sm:p-5">
-          <Badge tone="brand">Upcoming</Badge>
+          <Badge tone="brand">Upcoming holidays</Badge>
           <div className="mt-4 space-y-2">
             {[
               ['Holiday', 'Chennai office', '28 May'],
               ['Leave', 'Casual leave request', 'Pending'],
               ['Shift', 'General shift', '09:00'],
             ].map(([label, item, value]) => (
-              <div className="flex items-center justify-between gap-3 rounded-md border border-[#021333]/10 bg-[#f6f8ff] p-3" key={item}>
+              <button
+                className="flex w-full items-center justify-between gap-3 rounded-md border border-[#021333]/10 bg-[#f6f8ff] p-3 text-left transition hover:border-[#1e3fe3]/30 hover:bg-[#eaf0ff]"
+                key={item}
+                onClick={onOpenLeaveApplication}
+                type="button"
+              >
                 <div>
                   <p className="text-xs font-black uppercase text-[#5c6b8e]">{label}</p>
                   <p className="font-bold text-[#021333]">{item}</p>
                 </div>
                 <span className="text-sm font-black text-[#1e3fe3]">{value}</span>
-              </div>
+              </button>
             ))}
           </div>
         </Card>
@@ -80,7 +64,6 @@ function Summary({ icon, label, value }: { icon: React.ReactNode; label: string;
     <Card className="p-4 transition hover:-translate-y-0.5">
       <div className="flex items-center justify-between text-[#1e3fe3]">
         {icon}
-        <Badge tone="neutral">Live</Badge>
       </div>
       <p className="mt-4 text-sm font-bold text-[#5c6b8e]">{label}</p>
       <p className="mt-1 text-2xl font-black text-[#021333]">{value}</p>

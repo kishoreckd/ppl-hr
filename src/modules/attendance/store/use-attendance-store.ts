@@ -5,7 +5,7 @@ import { getDateKey, getLateMark, getWorkedMinutes } from '../utils/time-utils'
 interface IAttendanceState {
   today: IAttendanceRecord
   checkIn: (mood?: AttendanceMoodType) => void
-  checkOut: () => void
+  checkOut: (mood?: AttendanceMoodType) => void
 }
 
 function newToday(): IAttendanceRecord {
@@ -33,12 +33,13 @@ export const useAttendanceStore = create<IAttendanceState>((set) => ({
         },
       }
     }),
-  checkOut: () =>
+  checkOut: (mood) =>
     set((state) => {
       const occurredAt = new Date().toISOString()
       const completeRecord = {
         ...state.today,
-        punches: [...(state.today.punches ?? []), { action: 'Check Out' as const, occurredAt }],
+        mood: mood ?? state.today.mood,
+        punches: [...(state.today.punches ?? []), { action: 'Check Out' as const, mood, occurredAt }],
         swipeOut: occurredAt,
       }
       return {

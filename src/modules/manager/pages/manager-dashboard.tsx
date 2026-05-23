@@ -32,7 +32,7 @@ export function ManagerDashboard() {
         <Card className="overflow-hidden">
           <div className="flex items-center justify-between gap-3 border-b border-[#021333]/10 p-4">
             <div>
-              <p className="text-sm font-bold text-[#5c6b8e]">Live attendance</p>
+              <p className="text-sm font-bold text-[#5c6b8e]">Team attendance</p>
               <h2 className="text-xl font-black text-[#021333]">Team pulse</h2>
             </div>
             <UsersRound className="size-5 text-[#1e3fe3]" />

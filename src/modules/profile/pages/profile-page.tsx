@@ -1,0 +1,355 @@
+import { zodResolver } from '@hookform/resolvers/zod'
+import { motion } from 'framer-motion'
+import {
+  BadgeCheck,
+  BriefcaseBusiness,
+  CalendarCheck2,
+  HeartHandshake,
+  MapPin,
+  Sparkles,
+} from 'lucide-react'
+import { useForm, type UseFormRegisterReturn } from 'react-hook-form'
+import { useState } from 'react'
+import { toast } from 'react-toastify'
+import { Badge } from '../../../shared/components/ui/badge'
+import { Button } from '../../../shared/components/ui/button'
+import { Card } from '../../../shared/components/ui/card'
+import { Input } from '../../../shared/components/ui/input'
+import { Label } from '../../../shared/components/ui/label'
+import { Skeleton } from '../../../shared/components/ui/skeleton'
+import type { IAuthUser } from '../../auth/types/auth-types'
+import { ProfileFieldGrid } from '../components/profile-field-grid'
+import { ProfileSectionCard } from '../components/profile-section-card'
+import { useProfile } from '../hooks/use-profile'
+import { useProfileStore } from '../store/use-profile-store'
+import type { IEmployeeProfile, IProfileInterest, ProfileSectionType } from '../types/profile-types'
+import { formatDisplayName, getInitials } from '../utils/profile-utils'
+import {
+  profileContactSchema,
+  profileInterestsSchema,
+  profileOverviewSchema,
+  type ProfileContactSchemaType,
+  type ProfileInterestsSchemaType,
+  type ProfileOverviewSchemaType,
+} from '../validations/profile-schema'
+
+const PROFILE_SECTIONS: Array<{ label: string; value: ProfileSectionType }> = [
+  { label: 'Overview', value: 'overview' },
+  { label: 'Contact', value: 'contact' },
+  { label: 'Interests', value: 'interests' },
+]
+
+export function ProfilePage({ user }: { user: IAuthUser }) {
+  const { data: profile, isLoading } = useProfile(user)
+  const { activeSection, setActiveSection } = useProfileStore()
+
+  if (isLoading || !profile) {
+    return <ProfilePageSkeleton />
+  }
+
+  const displayName = formatDisplayName(profile.user.name)
+
+  return (
+    <div className="space-y-4">
+      <Card className="overflow-hidden">
+        <div className="h-28 bg-[linear-gradient(135deg,#235e65,#1e3fe3_48%,#35b86b)]" />
+        <div className="grid gap-4 p-4 lg:grid-cols-[1.35fr_0.65fr]">
+          <div className="flex flex-col gap-4 sm:flex-row">
+            <div className="-mt-14 grid size-24 shrink-0 place-items-center rounded-full border-4 border-white bg-[#eaf0ff] text-2xl font-black text-[#1e3fe3] shadow-xl">
+              {getInitials(displayName)}
+            </div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-2xl font-black text-[#021333]">{displayName}</h2>
+                <Badge tone="success">
+                  <BadgeCheck className="mr-1 size-3" />
+                  Active
+                </Badge>
+              </div>
+              <p className="mt-1 text-sm font-semibold text-[#5c6b8e]">
+                {profile.employment.designation} | {profile.employment.department}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-[#5c6b8e]">
+                <span className="inline-flex items-center gap-1 rounded-md bg-[#f6f8ff] px-2 py-1">
+                  <BriefcaseBusiness className="size-3.5" />
+                  {profile.employment.employeeId}
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-md bg-[#f6f8ff] px-2 py-1">
+                  <MapPin className="size-3.5" />
+                  {profile.contact.workLocation || 'Location not added'}
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-md bg-[#f6f8ff] px-2 py-1">
+                  <CalendarCheck2 className="size-3.5" />
+                  {profile.employment.shift}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg border border-[#021333]/10 bg-[#fbfbfd] p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-black uppercase text-[#5c6b8e]">Profile completion</p>
+                <p className="text-2xl font-black text-[#021333]">{profile.profileCompleteness}%</p>
+              </div>
+              <Sparkles className="size-8 text-[#35b86b]" />
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#eaf0ff]">
+              <div className="h-full rounded-full bg-[#35b86b]" style={{ width: `${profile.profileCompleteness}%` }} />
+            </div>
+            <p className="mt-3 text-xs font-semibold text-[#5c6b8e]">{profile.managerNote}</p>
+          </div>
+        </div>
+      </Card>
+
+      <div className="flex flex-wrap gap-2">
+        {PROFILE_SECTIONS.map((section) => (
+          <Button
+            className="min-h-9"
+            key={section.value}
+            onClick={() => setActiveSection(section.value)}
+            variant={activeSection === section.value ? 'default' : 'outline'}
+          >
+            {section.label}
+          </Button>
+        ))}
+      </div>
+
+      <motion.div
+        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 8 }}
+        key={activeSection}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+      >
+        {activeSection === 'overview' && (
+          <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+            <ProfileOverviewForm profile={profile} />
+            <ProfileSectionCard eyebrow="Employment" title="Organization details">
+              <ProfileFieldGrid
+                fields={[
+                  { label: 'Business unit', value: profile.employment.businessUnit },
+                  { label: 'Department', value: profile.employment.department },
+                  { label: 'Reporting manager', value: profile.employment.manager },
+                  { label: 'HRBP', value: profile.employment.hrbp },
+                ]}
+              />
+            </ProfileSectionCard>
+            <ProfileSectionCard className="xl:col-span-2" eyebrow="Recent activity" title="Work signals">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {profile.activities.map((activity) => (
+                  <div className="rounded-md border border-[#021333]/10 bg-white p-3" key={activity.label}>
+                    <p className="text-[11px] font-bold uppercase text-[#5c6b8e]">{activity.label}</p>
+                    <p className="mt-2 text-lg font-black text-[#021333]">{activity.value}</p>
+                  </div>
+                ))}
+              </div>
+            </ProfileSectionCard>
+          </div>
+        )}
+
+        {activeSection === 'contact' && (
+          <ProfileContactForm profile={profile} />
+        )}
+
+        {activeSection === 'interests' && (
+          <ProfileInterestsForm profile={profile} />
+        )}
+      </motion.div>
+    </div>
+  )
+}
+
+function ProfileOverviewForm({ profile }: { profile: IEmployeeProfile }) {
+  const form = useForm<ProfileOverviewSchemaType>({
+    defaultValues: {
+      about: profile.about,
+      bio: profile.bio,
+    },
+    resolver: zodResolver(profileOverviewSchema),
+  })
+
+  return (
+    <ProfileSectionCard eyebrow="Bio" title="About this employee">
+      <form
+        className="space-y-4"
+        onSubmit={form.handleSubmit(() => {
+          toast.success('Profile bio updated successfully.')
+        })}
+      >
+        <ProfileTextArea
+          error={form.formState.errors.bio?.message}
+          label="Bio"
+          placeholder="Add a short introduction about yourself."
+          register={form.register('bio')}
+        />
+        <ProfileTextArea
+          error={form.formState.errors.about?.message}
+          label="Work summary"
+          placeholder="Add your working style, ownership areas, or collaboration context."
+          register={form.register('about')}
+        />
+        <Button type="submit">Save overview</Button>
+      </form>
+    </ProfileSectionCard>
+  )
+}
+
+function ProfileContactForm({ profile }: { profile: IEmployeeProfile }) {
+  const form = useForm<ProfileContactSchemaType>({
+    defaultValues: profile.contact,
+    resolver: zodResolver(profileContactSchema),
+  })
+
+  return (
+    <ProfileSectionCard eyebrow="Contact" title="Contact and location">
+      <form
+        className="grid gap-4 lg:grid-cols-2"
+        onSubmit={form.handleSubmit(() => {
+          toast.success('Contact details updated successfully.')
+        })}
+      >
+        <ProfileInput error={form.formState.errors.email?.message} label="Email" register={form.register('email')} />
+        <ProfileInput error={form.formState.errors.phone?.message} label="Phone" register={form.register('phone')} />
+        <ProfileInput error={form.formState.errors.workLocation?.message} label="Work location" register={form.register('workLocation')} />
+        <ProfileInput error={form.formState.errors.address?.message} label="Address" register={form.register('address')} />
+        <div className="lg:col-span-2">
+          <Button type="submit">Save contact</Button>
+        </div>
+      </form>
+    </ProfileSectionCard>
+  )
+}
+
+function ProfileInterestsForm({ profile }: { profile: IEmployeeProfile }) {
+  const [savedInterests, setSavedInterests] = useState<IProfileInterest[]>(profile.interests)
+  const form = useForm<ProfileInterestsSchemaType>({
+    defaultValues: {
+      interests: profile.interests.map((interest) => interest.label).join(', '),
+    },
+    resolver: zodResolver(profileInterestsSchema),
+  })
+
+  return (
+    <ProfileSectionCard eyebrow="People profile" title="Bio and interests">
+      <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
+        <div className="rounded-lg border border-[#021333]/10 bg-[#fbfbfd] p-4">
+          <HeartHandshake className="mb-3 size-7 text-[#35b86b]" />
+          <p className="text-sm font-semibold text-[#5c6b8e]">
+            Add interests as comma-separated values. These stay employee-owned and editable.
+          </p>
+          <form
+            className="mt-4 space-y-4"
+            onSubmit={form.handleSubmit((values) => {
+              const nextInterests = values.interests
+                .split(',')
+                .map((interest) => interest.trim())
+                .filter(Boolean)
+                .map<IProfileInterest>((label, index) => ({
+                  label,
+                  tone: (['brand', 'success', 'neutral', 'warning'] as const)[index % 4],
+                }))
+              setSavedInterests(nextInterests)
+              toast.success('Interests updated successfully.')
+            })}
+          >
+            <ProfileTextArea
+              error={form.formState.errors.interests?.message}
+              label="Interests"
+              placeholder="Workflow automation, people analytics, OKR planning"
+              register={form.register('interests')}
+            />
+            <Button type="submit">Save interests</Button>
+          </form>
+        </div>
+        <div className="rounded-lg border border-[#021333]/10 bg-white p-4">
+          <p className="text-[11px] font-black uppercase text-[#5c6b8e]">Added interests</p>
+          {savedInterests.length ? (
+            <div className="mt-3 flex flex-wrap content-start gap-2">
+              {savedInterests.map((interest) => (
+                <Badge className="px-3 py-2" key={interest.label} tone={interest.tone}>
+                  {interest.label}
+                </Badge>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-3 rounded-md border border-dashed border-[#021333]/15 bg-[#f6f8ff] p-4 text-sm font-semibold text-[#5c6b8e]">
+              No interests added yet.
+            </div>
+          )}
+        </div>
+      </div>
+    </ProfileSectionCard>
+  )
+}
+
+function ProfileInput({
+  error,
+  label,
+  register,
+}: {
+  error?: string
+  label: string
+  register: UseFormRegisterReturn
+}) {
+  return (
+    <Label>
+      {label}
+      <Input aria-invalid={Boolean(error)} className="mt-1" {...register} />
+      {error && <span className="mt-1 block text-xs font-semibold text-rose-600">{error}</span>}
+    </Label>
+  )
+}
+
+function ProfileTextArea({
+  error,
+  label,
+  placeholder,
+  register,
+}: {
+  error?: string
+  label: string
+  placeholder: string
+  register: UseFormRegisterReturn
+}) {
+  return (
+    <Label>
+      {label}
+      <textarea
+        aria-invalid={Boolean(error)}
+        className="mt-1 min-h-28 w-full rounded-md border border-[#021333]/15 bg-white px-3 py-2 text-sm text-[#021333] outline-none transition placeholder:text-[#5c6b8e]/55 focus:border-[#1e3fe3] focus:ring-2 focus:ring-[#1e3fe3]/15"
+        placeholder={placeholder}
+        {...register}
+      />
+      {error && <span className="mt-1 block text-xs font-semibold text-rose-600">{error}</span>}
+    </Label>
+  )
+}
+
+function ProfilePageSkeleton() {
+  return (
+    <div className="space-y-4">
+      <Card className="overflow-hidden">
+        <Skeleton className="h-28 rounded-none" />
+        <div className="grid gap-4 p-4 lg:grid-cols-[1.35fr_0.65fr]">
+          <div className="flex gap-4">
+            <Skeleton className="size-24 rounded-full" />
+            <div className="flex-1 space-y-3">
+              <Skeleton className="h-7 w-60" />
+              <Skeleton className="h-4 w-80" />
+              <Skeleton className="h-8 w-full max-w-md" />
+            </div>
+          </div>
+          <Skeleton className="h-28 rounded-lg" />
+        </div>
+      </Card>
+      <div className="flex gap-2">
+        <Skeleton className="h-9 w-24" />
+        <Skeleton className="h-9 w-24" />
+        <Skeleton className="h-9 w-24" />
+      </div>
+      <Card className="grid gap-3 p-4 sm:grid-cols-2">
+        <Skeleton className="h-32 rounded-lg" />
+        <Skeleton className="h-32 rounded-lg" />
+      </Card>
+    </div>
+  )
+}

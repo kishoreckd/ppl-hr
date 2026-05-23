@@ -13,12 +13,6 @@ export function AttendancePunchAction({ className }: { className?: string }) {
   const checkedIn = isCheckedIn(today)
 
   function handleClick() {
-    if (checkedIn) {
-      checkOut()
-      toast.success('Check out successful.')
-      return
-    }
-
     setMoodOpen(true)
   }
 
@@ -26,8 +20,10 @@ export function AttendancePunchAction({ className }: { className?: string }) {
     <>
       <Button
         className={cn(
-          'min-h-9 rounded-full border border-emerald-500/70 px-4 shadow-none',
-          checkedIn ? 'bg-white text-[#12734a] hover:bg-emerald-50' : 'bg-white text-[#12734a] hover:bg-emerald-50',
+          'min-h-9 rounded-full px-4 shadow-none',
+          checkedIn
+            ? 'border border-rose-500/70 bg-white text-rose-700 hover:bg-rose-50'
+            : 'border border-emerald-500/70 bg-white text-[#12734a] hover:bg-emerald-50',
           className,
         )}
         onClick={handleClick}
@@ -37,7 +33,14 @@ export function AttendancePunchAction({ className }: { className?: string }) {
         {checkedIn ? 'Check Out' : 'Check In'}
       </Button>
       <CheckInMoodDialog
-        onCheckIn={(mood) => {
+        actionLabel={checkedIn ? 'Check Out' : 'Check In'}
+        onComplete={(mood) => {
+          if (checkedIn) {
+            checkOut(mood)
+            toast.success('Check out successful.')
+            return
+          }
+
           checkIn(mood)
           toast.success('Check in successful.')
         }}

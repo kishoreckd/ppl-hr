@@ -7,12 +7,13 @@ import { toast } from 'react-toastify'
 import { Badge } from '../../../shared/components/ui/badge'
 import { Button } from '../../../shared/components/ui/button'
 import { Card } from '../../../shared/components/ui/card'
+import { Input } from '../../../shared/components/ui/input'
 import { SETUP_STEPS } from '../constants/workspace-data'
 import { useOrganizationStore } from '../store'
 import { companySchema, type CompanySchemaType } from '../validations/company-schema'
 
 const FIELD_CLASS =
-  'mt-1.5 h-11 w-full rounded-md border border-[#021333]/15 bg-white px-3 text-sm text-[#021333] outline-none transition focus:border-[#1e3fe3] focus:ring-2 focus:ring-[#1e3fe3]/15'
+  'mt-1.5 h-11'
 
 export function SetupJourney() {
   const { company, currentStep, setCompany, setStep } = useOrganizationStore()
@@ -91,14 +92,14 @@ export function SetupJourney() {
             />
             <label className="text-sm font-bold text-[#021333]">
               Employee band
-              <select className={FIELD_CLASS} {...form.register('employeeBand')}>
+              <select className={`${FIELD_CLASS} w-full rounded-md border border-[#021333]/15 bg-white px-3 text-sm text-[#021333] outline-none transition focus:border-[#1e3fe3] focus:ring-2 focus:ring-[#1e3fe3]/15`} {...form.register('employeeBand')}>
                 <option>1-200 employees</option>
                 <option>201-1000 employees</option>
                 <option>1001-5000 employees</option>
                 <option>5000+ employees</option>
               </select>
               {form.formState.errors.employeeBand?.message && (
-                <span className="mt-1 block text-xs text-rose-700">
+                <span className="mt-1 block text-xs font-semibold text-rose-600">
                   {form.formState.errors.employeeBand.message}
                 </span>
               )}
@@ -174,8 +175,8 @@ function Field({ error, label, placeholder, registration }: IFieldProps) {
   return (
     <label className="text-sm font-bold text-[#021333]">
       {label}
-      <input className={FIELD_CLASS} placeholder={placeholder} {...registration} />
-      {error && <span className="mt-1 block text-xs text-rose-700">{error}</span>}
+      <Input aria-invalid={Boolean(error)} className={FIELD_CLASS} placeholder={placeholder} {...registration} />
+      {error && <span className="mt-1 block text-xs font-semibold text-rose-600">{error}</span>}
     </label>
   )
 }

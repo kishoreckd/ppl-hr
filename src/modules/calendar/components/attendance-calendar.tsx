@@ -3,17 +3,23 @@ import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin, { type DateClickArg } from '@fullcalendar/interaction'
 import { CalendarDays, LogIn, LogOut, Timer } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Badge } from '../../../shared/components/ui/badge'
 import { Button } from '../../../shared/components/ui/button'
 import { Card } from '../../../shared/components/ui/card'
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '../../../shared/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../../shared/components/ui/select'
 import type { IAttendanceRecord } from '../../attendance/types/attendance-types'
 import {
   formatMinutes,
@@ -23,6 +29,7 @@ import {
 } from '../../attendance/utils/time-utils'
 
 interface IAttendanceCalendarProps {
+  onRegularize?: () => void
   records: IAttendanceRecord[]
   title: string
 }
@@ -32,23 +39,38 @@ const STATUS_COLORS = {
   Holiday: '#475467',
   'Half Day': '#d97706',
   'In Progress': '#1e3fe3',
-  Leave: '#155eef',
+  Leave: '#7c3aed',
   Present: '#087443',
   Weekend: '#98a2b3',
 } as const
 
-export function AttendanceCalendar({ records, title }: IAttendanceCalendarProps) {
+const STATUS_LABELS = {
+  Absent: 'A:A',
+  Holiday: 'Holiday',
+  'Half Day': 'P:A',
+  'In Progress': 'In Progress',
+  Leave: 'Leave',
+  Present: 'P:P',
+  Weekend: 'Weekend',
+} as const
+
+const CURRENT_YEAR = String(new Date().getFullYear())
+
+export function AttendanceCalendar({ onRegularize, records, title }: IAttendanceCalendarProps) {
+  const calendarRef = useRef<FullCalendar | null>(null)
   const [selectedRecord, setSelectedRecord] = useState<IAttendanceRecord | null>(null)
+  const [selectedYear, setSelectedYear] = useState(String(new Date(records[0]?.date ?? `${CURRENT_YEAR}-01-01`).getFullYear()))
   const events = useMemo<EventInput[]>(
     () =>
       records.map((record) => {
         const status = getAttendanceStatus(record)
+        const label = STATUS_LABELS[status]
         return {
           backgroundColor: STATUS_COLORS[status],
           borderColor: STATUS_COLORS[status],
           date: record.date,
           extendedProps: { record },
-          title: `${status} | ${formatMinutes(getWorkedMinutes(record, record.swipeOut))}`,
+          title: `${label} | ${formatMinutes(getWorkedMinutes(record, record.swipeOut))}`,
         }
       }),
     [records],
@@ -70,6 +92,11 @@ export function AttendanceCalendar({ records, title }: IAttendanceCalendarProps)
     )
   }
 
+  function changeYear(year: string) {
+    setSelectedYear(year)
+    calendarRef.current?.getApi().gotoDate(`${year}-01-01`)
+  }
+
   return (
     <>
       <Card className="p-4">
@@ -78,14 +105,26 @@ export function AttendanceCalendar({ records, title }: IAttendanceCalendarProps)
             <CalendarDays className="size-4 text-[#1e3fe3]" />
             <h2 className="text-lg font-black text-[#021333]">{title}</h2>
           </div>
-          <div className="flex flex-wrap gap-1.5">
-            {Object.keys(STATUS_COLORS).slice(0, 6).map((status) => (
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Select onValueChange={changeYear} value={selectedYear}>
+              <SelectTrigger className="h-8 w-28">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {['2022', '2023', '2024', '2025', '2026', '2027'].map((year) => (
+                  <SelectItem key={year} value={year}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {(['Present', 'Half Day', 'Absent', 'Leave', 'Holiday', 'Weekend'] as const).map((status) => (
               <span className="inline-flex items-center gap-1 text-xs font-bold text-[#5c6b8e]" key={status}>
                 <span
                   className="size-2 rounded-full"
                   style={{ background: STATUS_COLORS[status as keyof typeof STATUS_COLORS] }}
                 />
-                {status}
+                {STATUS_LABELS[status]} <span className="font-semibold">({status})</span>
               </span>
             ))}
           </div>
@@ -94,22 +133,23 @@ export function AttendanceCalendar({ records, title }: IAttendanceCalendarProps)
           dateClick={openDate}
           eventClick={openEvent}
           events={events}
-          headerToolbar={{ center: 'title', end: 'next', start: 'prev' }}
+          headerToolbar={{ center: 'title', end: 'next,nextYear', start: 'prevYear,prev' }}
           height={470}
           initialDate={records[0]?.date}
           plugins={[dayGridPlugin, interactionPlugin]}
+          ref={calendarRef}
         />
       </Card>
       <Dialog open={Boolean(selectedRecord)} onOpenChange={(open) => !open && setSelectedRecord(null)}>
         <DialogContent>
-          {selectedRecord && <AttendanceDetail record={selectedRecord} />}
+          {selectedRecord && <AttendanceDetail onRegularize={onRegularize} record={selectedRecord} />}
         </DialogContent>
       </Dialog>
     </>
   )
 }
 
-function AttendanceDetail({ record }: { record: IAttendanceRecord }) {
+function AttendanceDetail({ onRegularize, record }: { onRegularize?: () => void; record: IAttendanceRecord }) {
   const status = getAttendanceStatus(record)
   const workedMinutes = getWorkedMinutes(record, record.swipeOut)
 
@@ -130,11 +170,11 @@ function AttendanceDetail({ record }: { record: IAttendanceRecord }) {
         <Detail icon={<Timer className="size-4" />} label="Worked hours" value={formatMinutes(workedMinutes)} />
         <Detail icon={<Timer className="size-4" />} label="Late mark" value={record.late ? 'Late' : 'Clear'} />
       </div>
-      <DialogClose asChild>
-        <Button className="mt-4 w-full" variant="outline">
-          Close
+      {status === 'Half Day' && (
+        <Button className="mt-4 w-full" onClick={onRegularize}>
+          Apply regularization
         </Button>
-      </DialogClose>
+      )}
     </>
   )
 }

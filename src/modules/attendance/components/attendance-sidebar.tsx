@@ -1,22 +1,22 @@
 import {
-  CalendarDays,
   Building2,
+  CalendarDays,
   ChevronDown,
-  CircleHelp,
   ContactRound,
   Goal,
+  LayoutDashboard,
   Mail,
   Medal,
-  Settings2,
-  LayoutDashboard,
   PanelLeftClose,
   PanelLeftOpen,
+  Settings2,
+  UserCheck2,
   UserRoundPlus,
   UsersRound,
-  UserCheck2,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import type { ReactNode } from 'react'
+import { useState } from 'react'
 import { Badge } from '../../../shared/components/ui/badge'
 import type { ConsolePageType } from '../types/console-types'
 
@@ -37,10 +37,27 @@ export function AttendanceSidebar({
   onPage,
   role,
 }: IAttendanceSidebarProps) {
+  const [openGroups, setOpenGroups] = useState({
+    attendance: isAttendancePage(activePage),
+    leave: isLeavePage(activePage),
+  })
+
+  function toggleGroup(group: 'attendance' | 'leave') {
+    setOpenGroups((groups) => ({ ...groups, [group]: !groups[group] }))
+  }
+
+  function navigatePage(page: ConsolePageType) {
+    onPage(page)
+    setOpenGroups({
+      attendance: isAttendancePage(page),
+      leave: isLeavePage(page),
+    })
+  }
+
   return (
     <motion.aside
-      animate={{ width: collapsed ? 68 : 180 }}
-      className="sticky top-0 z-30 hidden h-[calc(100vh-1.65rem)] shrink-0 border-r border-[#021333]/10 bg-white lg:flex lg:flex-col"
+      animate={{ width: collapsed ? 68 : 220 }}
+      className="sticky top-[1.65rem] z-30 hidden h-[calc(100vh-1.65rem)] shrink-0 overflow-hidden border-r border-[#021333]/10 bg-white lg:flex lg:flex-col"
       transition={{ damping: 28, stiffness: 260, type: 'spring' }}
     >
       <button
@@ -51,58 +68,85 @@ export function AttendanceSidebar({
       >
         {collapsed ? <PanelLeftOpen className="size-3.5" /> : <PanelLeftClose className="size-3.5" />}
       </button>
+
       <div className="flex h-[4.5rem] items-center gap-2 border-b border-[#021333]/10 px-4">
         <span className="grid size-10 shrink-0 place-items-center rounded-md bg-[#1e3fe3] font-black text-white">T</span>
         {!collapsed && (
-          <div>
+          <div className="min-w-0">
             <p className="text-[11px] font-black uppercase text-[#1e3fe3]">TeamPilot</p>
-            <p className="text-lg font-black text-[#021333]">Workspace</p>
+            <p className="truncate text-lg font-black text-[#021333]">Workspace</p>
           </div>
         )}
       </div>
-      <nav className="space-y-1 p-2" aria-label="Workspace">
-        <SideItem collapsed={collapsed} icon={<UsersRound className="size-3.5" />} label="Community" onClick={() => onPage('dashboard')} selected={false} />
-        <SideItem
-          collapsed={collapsed}
-          icon={<LayoutDashboard className="size-3.5" />}
-          label="Dashboard"
-          onClick={() => onPage('dashboard')}
-          selected={activePage === 'dashboard'}
-        />
-        <SideItem collapsed={collapsed} icon={<Medal className="size-3.5" />} label="Insider Program" onClick={() => onPage('dashboard')} selected={false} />
-        <SideItem collapsed={collapsed} icon={<Goal className="size-3.5" />} label="OKR" onClick={() => onPage('dashboard')} selected={false} />
-        <MenuGroup collapsed={collapsed} icon={<UserCheck2 className="size-3.5" />} label="Attendance">
-          <SubItem active={activePage === 'attendance-info'} label="Attendance info" onClick={() => onPage('attendance-info')} />
-          <SubItem active={activePage === 'attendance-calendar'} label="Calendar" onClick={() => onPage('attendance-calendar')} />
-          <SubItem active={activePage === 'attendance-history'} label="History" onClick={() => onPage('attendance-history')} />
-          <SubItem active={activePage === 'regularization'} label="Regularizations" onClick={() => onPage('regularization')} />
-          {managerView && (
-            <>
-              <SubItem active={activePage === 'team-attendance'} label="Team attendance" onClick={() => onPage('team-attendance')} />
-              <SubItem active={activePage === 'team-calendar'} label="Team calendar" onClick={() => onPage('team-calendar')} />
-            </>
-          )}
-        </MenuGroup>
-        <MenuGroup collapsed={collapsed} icon={<CalendarDays className="size-3.5" />} label="Leave">
-          <SubItem active={activePage === 'leave-calendar'} label="Leave calendar" onClick={() => onPage('leave-calendar')} />
-        </MenuGroup>
-        <SideItem collapsed={collapsed} icon={<Building2 className="size-3.5" />} label="Company" onClick={() => onPage('dashboard')} selected={false} />
-        <SideItem collapsed={collapsed} icon={<CircleHelp className="size-3.5" />} label="Help" onClick={() => undefined} selected={false} />
-        <SideItem collapsed={collapsed} icon={<ContactRound className="size-3.5" />} label="Team" onClick={() => onPage('team-attendance')} selected={false} />
-        <SideItem collapsed={collapsed} icon={<UserRoundPlus className="size-3.5" />} label="Recruitment" onClick={() => onPage('dashboard')} selected={false} />
-        <SideItem collapsed={collapsed} icon={<UsersRound className="size-3.5" />} label="Employees" onClick={() => onPage('team-attendance')} selected={false} />
-        <SideItem collapsed={collapsed} icon={<Mail className="size-3.5" />} label="Email Subscription" onClick={() => onPage('dashboard')} selected={false} />
+
+      <nav className="min-h-0 flex-1 overflow-y-auto" aria-label="Workspace">
+        <NavSection>
+          <SideItem collapsed={collapsed} icon={<UsersRound className="size-4" />} label="Community" onClick={() => navigatePage('dashboard')} selected={false} />
+          <SideItem
+            collapsed={collapsed}
+            icon={<LayoutDashboard className="size-4" />}
+            label="Dashboard"
+            onClick={() => navigatePage('dashboard')}
+            selected={activePage === 'dashboard'}
+          />
+          <SideItem collapsed={collapsed} icon={<Medal className="size-4" />} label="Insider Program" onClick={() => navigatePage('dashboard')} selected={false} />
+          <SideItem collapsed={collapsed} icon={<Goal className="size-4" />} label="OKR" onClick={() => navigatePage('dashboard')} selected={false} />
+        </NavSection>
+
+        <NavSection>
+          <MenuGroup
+            collapsed={collapsed}
+            icon={<UserCheck2 className="size-4" />}
+            label="Attendance"
+            onToggle={() => toggleGroup('attendance')}
+            open={openGroups.attendance}
+          >
+            <SubItem active={activePage === 'attendance-info'} label="Attendance info" onClick={() => navigatePage('attendance-info')} />
+            <SubItem active={activePage === 'attendance-calendar'} label="Calendar" onClick={() => navigatePage('attendance-calendar')} />
+            <SubItem active={activePage === 'attendance-history'} label="History" onClick={() => navigatePage('attendance-history')} />
+            <SubItem active={activePage === 'regularization'} label="Regularizations" onClick={() => navigatePage('regularization')} />
+            {managerView && (
+              <>
+                <SubItem active={activePage === 'team-attendance'} label="Team attendance" onClick={() => navigatePage('team-attendance')} />
+                <SubItem active={activePage === 'team-calendar'} label="Team calendar" onClick={() => navigatePage('team-calendar')} />
+              </>
+            )}
+          </MenuGroup>
+          <MenuGroup
+            collapsed={collapsed}
+            icon={<CalendarDays className="size-4" />}
+            label="Leave"
+            onToggle={() => toggleGroup('leave')}
+            open={openGroups.leave}
+          >
+            <SubItem active={activePage === 'leave-balance'} label="Leave balance" onClick={() => navigatePage('leave-balance')} />
+            <SubItem active={activePage === 'leave-application'} label={managerView ? 'Leave approvals' : 'Leave application'} onClick={() => navigatePage('leave-application')} />
+            <SubItem active={activePage === 'leave-calendar'} label="Holiday calendar" onClick={() => navigatePage('leave-calendar')} />
+            {role === 'Admin' && <SubItem active={activePage === 'leave-admin'} label="Leave setup" onClick={() => navigatePage('leave-admin')} />}
+          </MenuGroup>
+          <SideItem collapsed={collapsed} icon={<Building2 className="size-4" />} label="Company" onClick={() => navigatePage('dashboard')} selected={false} />
+        </NavSection>
+
+        <NavSection last>
+          <SideItem collapsed={collapsed} icon={<ContactRound className="size-4" />} label="Team" onClick={() => navigatePage('team-attendance')} selected={false} />
+          <SideItem collapsed={collapsed} icon={<UserRoundPlus className="size-4" />} label="Recruitment" onClick={() => navigatePage('dashboard')} selected={false} />
+          <SideItem collapsed={collapsed} icon={<UsersRound className="size-4" />} label="Employees" onClick={() => navigatePage('team-attendance')} selected={false} />
+          <SideItem collapsed={collapsed} icon={<Mail className="size-4" />} label="Email Subscription" onClick={() => navigatePage('dashboard')} selected={false} />
+          <SideItem collapsed={collapsed} icon={<Settings2 className="size-4" />} label="Settings" onClick={() => undefined} selected={false} />
+        </NavSection>
       </nav>
-      <div className="mt-auto border-t border-[#021333]/10 p-2">
-        <SideItem collapsed={collapsed} icon={<Settings2 className="size-3.5" />} label="Settings" onClick={() => undefined} selected={false} />
-        {!collapsed && (
-          <div className="mt-2 px-2">
-            <Badge tone="brand">{role}</Badge>
-          </div>
-        )}
-      </div>
+
+      {!collapsed && (
+        <div className="mt-auto border-t border-[#021333]/10 p-3">
+          <Badge tone="brand">{role}</Badge>
+        </div>
+      )}
     </motion.aside>
   )
+}
+
+function NavSection({ children, last = false }: { children: ReactNode; last?: boolean }) {
+  return <div className={`space-y-1 px-3 py-3 ${last ? '' : 'border-b border-[#021333]/10'}`}>{children}</div>
 }
 
 function MenuGroup({
@@ -110,24 +154,45 @@ function MenuGroup({
   collapsed,
   icon,
   label,
+  onToggle,
+  open,
 }: {
   children: ReactNode
   collapsed: boolean
   icon: ReactNode
   label: string
+  onToggle: () => void
+  open: boolean
 }) {
   return (
     <div>
-      <div className="flex h-7 items-center gap-2 rounded px-2 text-[11.5px] font-semibold text-[#5c6b8e]">
+      <button
+        className={`flex h-9 w-full items-center gap-3 rounded-md px-2 text-left text-sm font-semibold transition ${
+          open ? 'text-[#021333]' : 'text-[#5c6b8e] hover:bg-[#f6f8ff] hover:text-[#021333]'
+        }`}
+        onClick={onToggle}
+        title={label}
+        type="button"
+      >
         {icon}
         {!collapsed && (
           <>
-            <span>{label}</span>
-            <ChevronDown className="ml-auto size-3.5 text-[#5c6b8e]" />
+            <span className="truncate">{label}</span>
+            <ChevronDown className={`ml-auto size-4 text-[#5c6b8e] transition-transform ${open ? 'rotate-180' : ''}`} />
           </>
         )}
-      </div>
-      {!collapsed && <div className="ml-3 border-l border-[#35b86b] py-1 pl-2">{children}</div>}
+      </button>
+      {!collapsed && open && (
+        <motion.div
+          animate={{ height: 'auto', opacity: 1 }}
+          className="ml-4 overflow-hidden border-l border-[#1e3fe3] py-1 pl-3"
+          exit={{ height: 0, opacity: 0 }}
+          initial={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.18, ease: 'easeOut' }}
+        >
+          {children}
+        </motion.div>
+      )}
     </div>
   )
 }
@@ -147,7 +212,7 @@ function SideItem({
 }) {
   return (
     <button
-      className={`flex h-6 w-full items-center gap-2 rounded px-2 text-left text-[11.5px] font-medium transition ${
+      className={`flex h-9 w-full items-center gap-3 rounded-md px-2 text-left text-sm font-medium transition ${
         selected ? 'bg-[#021333]/8 text-[#021333]' : 'text-[#5c6b8e] hover:bg-[#f6f8ff] hover:text-[#021333]'
       }`}
       onClick={onClick}
@@ -155,7 +220,7 @@ function SideItem({
       type="button"
     >
       {icon}
-      {!collapsed && label}
+      {!collapsed && <span className="truncate">{label}</span>}
     </button>
   )
 }
@@ -163,8 +228,8 @@ function SideItem({
 function SubItem({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
   return (
     <button
-      className={`block min-h-7 w-full truncate rounded px-2 text-left text-[11.5px] font-semibold transition ${
-        active ? 'text-[#12734a]' : 'text-[#5c6b8e] hover:text-[#021333]'
+      className={`block min-h-8 w-full truncate rounded px-2 text-left text-sm font-semibold transition ${
+        active ? 'text-[#1e3fe3]' : 'text-[#5c6b8e] hover:text-[#021333]'
       }`}
       onClick={onClick}
       type="button"
@@ -172,4 +237,19 @@ function SubItem({ active, label, onClick }: { active: boolean; label: string; o
       {label}
     </button>
   )
+}
+
+function isAttendancePage(page: ConsolePageType) {
+  return [
+    'attendance-info',
+    'attendance-calendar',
+    'attendance-history',
+    'regularization',
+    'team-attendance',
+    'team-calendar',
+  ].includes(page)
+}
+
+function isLeavePage(page: ConsolePageType) {
+  return ['leave-balance', 'leave-application', 'leave-admin', 'leave-calendar'].includes(page)
 }
