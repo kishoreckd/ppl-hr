@@ -10,8 +10,9 @@ export interface ILeaveBalance {
 }
 
 export interface ILeaveTypePolicy {
+  annualQuota: string
   balanceLevel: string
-  cashable: string
+  cashable: 'Yes' | 'No'
   gender: string
   id: string
   status: 'Active' | 'Inactive'
@@ -27,6 +28,8 @@ export interface IHoliday {
 
 export interface ILeaveRequest {
   createdBy: string
+  compOffHours?: string
+  compOffWorkedDate?: string
   days: number
   employee: string
   emergencyContact?: string

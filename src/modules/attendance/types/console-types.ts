@@ -63,7 +63,6 @@ export function getMobilePages(managerView: boolean): ConsolePageType[] {
         'attendance-history',
         'regularization',
         'leave-balance',
-        'leave-application',
         'leave-calendar',
       ]
 }

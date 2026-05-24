@@ -1,6 +1,6 @@
-import { ShieldCheck } from 'lucide-react'
+import { Eye, EyeOff, ShieldCheck } from 'lucide-react'
 import type { FieldErrors, UseFormRegisterReturn } from 'react-hook-form'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Input } from '../../../shared/components/ui/input'
 import { Label } from '../../../shared/components/ui/label'
 import {
@@ -44,10 +44,32 @@ export function AuthTextField({
   registration: UseFormRegisterReturn
   type?: string
 }) {
+  const [passwordVisible, setPasswordVisible] = useState(false)
+  const isPassword = type === 'password'
+  const fieldType = isPassword && passwordVisible ? 'text' : type
+  const PasswordIcon = passwordVisible ? EyeOff : Eye
+
   return (
     <Label>
       {label}
-      <Input aria-invalid={Boolean(error)} className="mt-1.5 h-11" type={type} {...registration} />
+      <div className="relative mt-1.5">
+        <Input
+          aria-invalid={Boolean(error)}
+          className={`h-11 ${isPassword ? 'pr-11' : ''}`}
+          type={fieldType}
+          {...registration}
+        />
+        {isPassword && (
+          <button
+            aria-label={passwordVisible ? 'Hide password' : 'Show password'}
+            className="absolute right-2 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-md text-[#5c6b8e] transition hover:bg-[#eaf0ff] hover:text-[#021333]"
+            onClick={() => setPasswordVisible((current) => !current)}
+            type="button"
+          >
+            <PasswordIcon className="size-4" />
+          </button>
+        )}
+      </div>
       {error && <span className="mt-1 block text-xs font-semibold text-rose-600">{error}</span>}
     </Label>
   )

@@ -41,17 +41,17 @@ export function RequestCalendarPanel({
         </div>
       </div>
 
-      <div className="mt-4 rounded-lg border border-[#021333]/10 bg-white p-2">
+      <div className="mt-3 rounded-lg border border-[#021333]/10 bg-white p-2">
         <div className="mb-2 text-center text-sm font-black text-[#021333]">{monthLabel}</div>
         <div className="grid grid-cols-7 gap-0.5 text-center text-[10px] font-black text-[#5c6b8e]">
           {WEEKDAYS.map((weekday) => (
             <span key={weekday}>{weekday}</span>
           ))}
         </div>
-        <div className="mt-2 grid grid-cols-7 gap-1.5">
+        <div className="mt-2 grid grid-cols-7 gap-1">
           {cells.map((cell) => {
             if (!cell.day) {
-              return <span className="h-8" key={cell.key} />
+              return <span className="h-7" key={cell.key} />
             }
 
             const date = toIsoDate(year, month, cell.day)
@@ -60,7 +60,7 @@ export function RequestCalendarPanel({
 
             return (
               <button
-                className={`relative grid h-8 place-items-center rounded-md text-xs font-bold transition ${
+                className={`relative grid h-7 place-items-center rounded-md text-xs font-bold transition ${
                   selected
                     ? 'bg-[#1e3fe3] text-white shadow-md shadow-[#1e3fe3]/20'
                     : 'text-[#021333] hover:bg-[#eaf0ff] hover:text-[#1e3fe3]'
@@ -90,16 +90,16 @@ export function RequestCalendarPanel({
         </div>
       </div>
 
-      <div className="mt-4 space-y-2">
+      <div className="mt-3 space-y-1.5">
         {markers.slice(0, 4).map((marker) => (
-          <div className="flex items-center justify-between rounded-md border border-[#021333]/10 bg-white px-3 py-2" key={`${marker.date}-${marker.label}`}>
+          <div className="flex items-center justify-between rounded-md border border-[#021333]/10 bg-white px-2.5 py-1.5" key={`${marker.date}-${marker.label}`}>
             <span className="text-xs font-black text-[#021333]">{marker.label}</span>
             <span className="text-xs font-semibold text-[#5c6b8e]">{formatShortDate(marker.date)}</span>
           </div>
         ))}
       </div>
 
-      <Button className="mt-4 w-full" onClick={() => onSelectDate(toIsoDate(year, month, TODAY.getDate()))} type="button" variant="outline">
+      <Button className="mt-3 min-h-9 w-full" onClick={() => onSelectDate(toIsoDate(year, month, TODAY.getDate()))} type="button" variant="outline">
         Select today
       </Button>
     </div>

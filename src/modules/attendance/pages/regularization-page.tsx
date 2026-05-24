@@ -267,7 +267,7 @@ export function RegularizationPage({
               </button>
             ))}
             <Select onValueChange={setManager} value={manager}>
-              <SelectTrigger className="h-8 w-44">
+              <SelectTrigger className="h-8 w-52 [&>span]:truncate">
                 <SelectValue placeholder="Manager" />
               </SelectTrigger>
               <SelectContent>
@@ -386,7 +386,7 @@ export function RegularizationPage({
           ))}
           {managerView && (
             <Select onValueChange={setManager} value={manager}>
-              <SelectTrigger className="h-8 w-44">
+              <SelectTrigger className="h-8 w-52 [&>span]:truncate">
                 <SelectValue placeholder="Manager" />
               </SelectTrigger>
               <SelectContent>
@@ -592,8 +592,8 @@ function CreateRegularizationPage({
   }
 
   return (
-    <Card className="overflow-hidden p-4">
-      <div className="flex items-center justify-between gap-3 border-b border-[#021333]/10 bg-[#f6f8ff] px-5 py-4">
+    <Card className="mx-auto max-w-5xl overflow-hidden">
+      <div className="flex items-center justify-between gap-3 border-b border-[#021333]/10 bg-[#f6f8ff] px-4 py-3">
         <div>
           <h2 className="text-lg font-black text-[#021333]">Apply For Regularization</h2>
           <p className="text-sm text-[#5c6b8e]">Pick the missing attendance date range before submitting.</p>
@@ -602,7 +602,7 @@ function CreateRegularizationPage({
           Cancel
         </Button>
       </div>
-      <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_21rem]">
         <RequestCalendarPanel
           helper="Pick the missing attendance date range before submitting."
           markers={[
@@ -614,30 +614,30 @@ function CreateRegularizationPage({
           selectedDates={[fromDate, toDate].filter(Boolean)}
           title="My attendance calendar"
         />
-        <form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
-          <FieldError error={form.formState.errors.requestTitle?.message}>
+        <form className="space-y-3" onSubmit={form.handleSubmit(submit)}>
+          <FieldError error={form.formState.errors.requestTitle?.message} label="Request title">
             <Input aria-invalid={Boolean(form.formState.errors.requestTitle)} {...form.register('requestTitle')} placeholder="Request title" />
           </FieldError>
           <div className="grid gap-3 sm:grid-cols-2">
-            <FieldError error={form.formState.errors.fromDate?.message}>
+            <FieldError error={form.formState.errors.fromDate?.message} label="From date">
               <Input aria-invalid={Boolean(form.formState.errors.fromDate)} type="date" {...form.register('fromDate')} />
             </FieldError>
-            <FieldError error={form.formState.errors.toDate?.message}>
+            <FieldError error={form.formState.errors.toDate?.message} label="To date">
               <Input aria-invalid={Boolean(form.formState.errors.toDate)} type="date" {...form.register('toDate')} />
             </FieldError>
-            <FieldError error={form.formState.errors.from?.message}>
+            <FieldError error={form.formState.errors.from?.message} label="From time">
               <Input aria-invalid={Boolean(form.formState.errors.from)} {...form.register('from')} placeholder="From time" />
             </FieldError>
-            <FieldError error={form.formState.errors.to?.message}>
+            <FieldError error={form.formState.errors.to?.message} label="To time">
               <Input aria-invalid={Boolean(form.formState.errors.to)} {...form.register('to')} placeholder="To time" />
             </FieldError>
           </div>
-          <FieldError error={form.formState.errors.emergencyContact?.message}>
+          <FieldError error={form.formState.errors.emergencyContact?.message} label="Emergency contact">
             <Input aria-invalid={Boolean(form.formState.errors.emergencyContact)} {...form.register('emergencyContact')} placeholder="Emergency contact" />
           </FieldError>
-          <FieldError error={form.formState.errors.reason?.message}>
+          <FieldError error={form.formState.errors.reason?.message} label="Reason">
             <textarea
-              className="min-h-28 w-full rounded-md border border-[#021333]/15 bg-white px-3 py-2 text-sm text-[#021333] outline-none transition focus:border-[#1e3fe3] focus:ring-2 focus:ring-[#1e3fe3]/15"
+              className="min-h-24 w-full rounded-md border border-[#021333]/15 bg-white px-3 py-2 text-sm text-[#021333] outline-none transition focus:border-[#1e3fe3] focus:ring-2 focus:ring-[#1e3fe3]/15"
               {...form.register('reason')}
               placeholder="Add reason..."
             />
@@ -720,9 +720,10 @@ function ApprovalDialog({
   )
 }
 
-function FieldError({ children, error }: { children: ReactNode; error?: string }) {
+function FieldError({ children, error, label }: { children: ReactNode; error?: string; label?: string }) {
   return (
     <label className="block">
+      {label && <span className="mb-1 block text-sm font-black text-[#021333]">{label}</span>}
       {children}
       {error && <span className="mt-1 block text-xs font-semibold text-rose-600">{error}</span>}
     </label>

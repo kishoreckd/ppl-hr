@@ -17,6 +17,7 @@ interface ILeaveCalendarState {
   holidays: IHoliday[]
   leaveRequests: ILeaveRequest[]
   addHoliday: (holiday: HolidaySchemaType) => void
+  addHolidays: (holidays: HolidaySchemaType[]) => void
   approveLeave: (id: string) => void
   updateLeaveStatus: (ids: string[], status: LeaveStatusType) => void
   submitLeave: (employee: string, request: LeaveRequestSchemaType) => void
@@ -31,6 +32,16 @@ export const useLeaveCalendarStore = create<ILeaveCalendarState>((set) => ({
           ...holiday,
           id: `holiday-${Date.now()}`,
         },
+      ],
+    })),
+  addHolidays: (holidays) =>
+    set((state) => ({
+      holidays: [
+        ...state.holidays,
+        ...holidays.map((holiday, index) => ({
+          ...holiday,
+          id: `holiday-${Date.now()}-${index}`,
+        })),
       ],
     })),
   approveLeave: (id) =>

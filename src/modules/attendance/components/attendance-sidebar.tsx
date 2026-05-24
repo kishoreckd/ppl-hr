@@ -120,7 +120,7 @@ export function AttendanceSidebar({
             open={openGroups.leave}
           >
             <SubItem active={activePage === 'leave-balance'} label="Leave balance" onClick={() => navigatePage('leave-balance')} />
-            <SubItem active={activePage === 'leave-application'} label={managerView ? 'Leave approvals' : 'Leave application'} onClick={() => navigatePage('leave-application')} />
+            {managerView && <SubItem active={activePage === 'leave-application'} label="Leave approvals" onClick={() => navigatePage('leave-application')} />}
             <SubItem active={activePage === 'leave-calendar'} label="Holiday calendar" onClick={() => navigatePage('leave-calendar')} />
             {role === 'Admin' && <SubItem active={activePage === 'leave-admin'} label="Leave setup" onClick={() => navigatePage('leave-admin')} />}
           </MenuGroup>

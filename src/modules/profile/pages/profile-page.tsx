@@ -48,6 +48,7 @@ export function ProfilePage({ user }: { user: IAuthUser }) {
   }
 
   const displayName = formatDisplayName(profile.user.name)
+  const currentSection = PROFILE_SECTIONS.some((section) => section.value === activeSection) ? activeSection : 'overview'
 
   return (
     <div className="space-y-4">
@@ -107,7 +108,7 @@ export function ProfilePage({ user }: { user: IAuthUser }) {
             className="min-h-9"
             key={section.value}
             onClick={() => setActiveSection(section.value)}
-            variant={activeSection === section.value ? 'default' : 'outline'}
+            variant={currentSection === section.value ? 'default' : 'outline'}
           >
             {section.label}
           </Button>
@@ -117,10 +118,10 @@ export function ProfilePage({ user }: { user: IAuthUser }) {
       <motion.div
         animate={{ opacity: 1, y: 0 }}
         initial={{ opacity: 0, y: 8 }}
-        key={activeSection}
+        key={currentSection}
         transition={{ duration: 0.2, ease: 'easeOut' }}
       >
-        {activeSection === 'overview' && (
+        {currentSection === 'overview' && (
           <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
             <ProfileOverviewForm profile={profile} />
             <ProfileSectionCard eyebrow="Employment" title="Organization details">
@@ -146,11 +147,11 @@ export function ProfilePage({ user }: { user: IAuthUser }) {
           </div>
         )}
 
-        {activeSection === 'contact' && (
+        {currentSection === 'contact' && (
           <ProfileContactForm profile={profile} />
         )}
 
-        {activeSection === 'interests' && (
+        {currentSection === 'interests' && (
           <ProfileInterestsForm profile={profile} />
         )}
       </motion.div>

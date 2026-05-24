@@ -8,6 +8,7 @@ import {
   Search,
   SlidersHorizontal,
   Trash2,
+  Upload,
 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { Controller, useForm, useWatch, type Control, type UseFormRegisterReturn } from 'react-hook-form'
@@ -16,12 +17,6 @@ import { Badge } from '../../../shared/components/ui/badge'
 import { Button } from '../../../shared/components/ui/button'
 import { Card } from '../../../shared/components/ui/card'
 import { Checkbox } from '../../../shared/components/ui/checkbox'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '../../../shared/components/ui/dialog'
 import { Input } from '../../../shared/components/ui/input'
 import { Label } from '../../../shared/components/ui/label'
 import { RequestCalendarPanel } from '../../../shared/components/ui/request-calendar-panel'
@@ -43,9 +38,13 @@ import {
 import { cn } from '../../../shared/lib/utils'
 import type { AuthRoleType } from '../../auth/types/auth-types'
 import { useLeaveCalendarStore } from '../store/use-leave-calendar-store'
-import type { ILeaveBalance, ILeaveRequest, ILeaveTypePolicy, LeaveStatusType } from '../types/leave-calendar-types'
+import type { ILeaveBalance, ILeaveTypePolicy, LeaveStatusType } from '../types/leave-calendar-types'
 import {
+  holidaySchema,
+  leavePolicySchema,
   leaveRequestSchema,
+  type HolidaySchemaType,
+  type LeavePolicySchemaType,
   type LeaveRequestSchemaType,
 } from '../validations/leave-calendar-schema'
 
@@ -66,12 +65,12 @@ const LEAVE_BALANCES: ILeaveBalance[] = [
 ]
 
 const LEAVE_POLICIES: ILeaveTypePolicy[] = [
-  { balanceLevel: 'Limited', cashable: 'No', gender: 'All', id: 'leave-policy-1', status: 'Active', type: 'Restricted Holiday' },
-  { balanceLevel: 'Limited', cashable: 'No', gender: 'Married Male', id: 'leave-policy-2', status: 'Inactive', type: 'Paternity Leave' },
-  { balanceLevel: 'Limited', cashable: 'Yes', gender: 'Married Female', id: 'leave-policy-3', status: 'Active', type: 'Maternity Leave' },
-  { balanceLevel: 'Limited', cashable: 'No', gender: 'All', id: 'leave-policy-4', status: 'Inactive', type: 'Loss Of Pay' },
-  { balanceLevel: 'Limited', cashable: 'Yes', gender: 'All', id: 'leave-policy-5', status: 'Active', type: 'Compensatory Off' },
-  { balanceLevel: 'Limited', cashable: 'No', gender: 'All', id: 'leave-policy-6', status: 'Inactive', type: 'Casual Leave' },
+  { annualQuota: '2', balanceLevel: 'Limited', cashable: 'No', gender: 'All', id: 'leave-policy-1', status: 'Active', type: 'Restricted Holiday' },
+  { annualQuota: '10', balanceLevel: 'Limited', cashable: 'No', gender: 'Married Male', id: 'leave-policy-2', status: 'Inactive', type: 'Paternity Leave' },
+  { annualQuota: '180', balanceLevel: 'Limited', cashable: 'Yes', gender: 'Married Female', id: 'leave-policy-3', status: 'Active', type: 'Maternity Leave' },
+  { annualQuota: '0', balanceLevel: 'Limited', cashable: 'No', gender: 'All', id: 'leave-policy-4', status: 'Inactive', type: 'Loss Of Pay' },
+  { annualQuota: '0', balanceLevel: 'Limited', cashable: 'Yes', gender: 'All', id: 'leave-policy-5', status: 'Active', type: 'Compensatory Off' },
+  { annualQuota: '10', balanceLevel: 'Limited', cashable: 'No', gender: 'All', id: 'leave-policy-6', status: 'Inactive', type: 'Casual Leave' },
 ]
 
 export function LeaveCalendarPage({ name, page = 'calendar', role }: ILeaveCalendarPageProps) {
@@ -94,154 +93,53 @@ export function LeaveCalendarPage({ name, page = 'calendar', role }: ILeaveCalen
 
 function LeaveBalancePage({ name }: { name: string }) {
   const submitLeave = useLeaveCalendarStore((state) => state.submitLeave)
-  const [applyOpen, setApplyOpen] = useState(false)
+  const [applyMode, setApplyMode] = useState(false)
 
   function createLeave(values: LeaveRequestSchemaType) {
     submitLeave(name, values)
-    setApplyOpen(false)
+    setApplyMode(false)
     toast.success('Leave request submitted successfully.')
   }
 
+  if (applyMode) {
+    return <MyLeaveRequestsPage onCancel={() => setApplyMode(false)} onCreate={createLeave} />
+  }
+
   return (
-    <>
-      <Card className="p-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <LeaveToolbar filters={['Employee', 'Year']} />
-          <Button onClick={() => setApplyOpen(true)}>
-            <CalendarPlus2 className="size-4" />
-            Apply for Leave
-          </Button>
-        </div>
-        <div className="mt-4 overflow-x-auto rounded-lg border border-[#021333]/10">
-          <Table className="min-w-[760px] border-separate border-spacing-0">
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                {['Leave Type', 'Granted', 'Consumed', 'Approval Pending', 'Balance', 'Encashed Count'].map((heading) => (
-                  <TableHead className="border-b border-r border-[#021333]/10 bg-white last:border-r-0" key={heading}>
-                    {heading}
-                  </TableHead>
-                ))}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {LEAVE_BALANCES.map((leave) => (
-                <TableRow key={leave.leaveType}>
-                  <TableCell className="border-r border-[#021333]/10 font-semibold text-[#5c6b8e]">{leave.leaveType}</TableCell>
-                  <TableCell className="border-r border-[#021333]/10">{leave.granted}</TableCell>
-                  <TableCell className="border-r border-[#021333]/10">{leave.consumed}</TableCell>
-                  <TableCell className="border-r border-[#021333]/10">{leave.approvalPending}</TableCell>
-                  <TableCell className="border-r border-[#021333]/10">{leave.balance}</TableCell>
-                  <TableCell>{leave.encashedCount}</TableCell>
-                </TableRow>
+    <Card className="p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <LeaveToolbar filters={['Employee', 'Year']} />
+        <Button onClick={() => setApplyMode(true)}>
+          <CalendarPlus2 className="size-4" />
+          Apply for Leave
+        </Button>
+      </div>
+      <div className="mt-4 overflow-x-auto rounded-lg border border-[#021333]/10">
+        <Table className="min-w-[760px] border-separate border-spacing-0">
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              {['Leave Type', 'Granted', 'Consumed', 'Approval Pending', 'Balance', 'Encashed Count'].map((heading) => (
+                <TableHead className="border-b border-r border-[#021333]/10 bg-white last:border-r-0" key={heading}>
+                  {heading}
+                </TableHead>
               ))}
-            </TableBody>
-          </Table>
-        </div>
-      </Card>
-      <ApplyLeaveDialog onCreate={createLeave} onOpenChange={setApplyOpen} open={applyOpen} />
-    </>
-  )
-}
-
-function ApplyLeaveDialog({
-  onCreate,
-  onOpenChange,
-  open,
-}: {
-  onCreate: (values: LeaveRequestSchemaType) => void
-  onOpenChange: (open: boolean) => void
-  open: boolean
-}) {
-  const form = useForm<LeaveRequestSchemaType>({
-    defaultValues: {
-      emergencyContact: '',
-      fromDate: '',
-      fromTime: '',
-      leaveType: 'Casual leave',
-      reason: '',
-      toDate: '',
-      toTime: '',
-    },
-    mode: 'onChange',
-    resolver: zodResolver(leaveRequestSchema),
-  })
-  const fromDate = useWatch({ control: form.control, name: 'fromDate' })
-  const toDate = useWatch({ control: form.control, name: 'toDate' })
-
-  function submit(values: LeaveRequestSchemaType) {
-    onCreate(values)
-    form.reset({
-      emergencyContact: '',
-      fromDate: '',
-      fromTime: '',
-      leaveType: values.leaveType,
-      reason: '',
-      toDate: '',
-      toTime: '',
-    })
-  }
-
-  function selectDate(date: string) {
-    if (!fromDate || (fromDate && toDate)) {
-      form.setValue('fromDate', date, { shouldDirty: true, shouldValidate: true })
-      form.setValue('toDate', '', { shouldDirty: true, shouldValidate: true })
-      return
-    }
-
-    if (date < fromDate) {
-      form.setValue('fromDate', date, { shouldDirty: true, shouldValidate: true })
-      return
-    }
-
-    form.setValue('toDate', date, { shouldDirty: true, shouldValidate: true })
-  }
-
-  return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="max-w-3xl p-0">
-        <DialogHeader className="border-b border-[#021333]/10 bg-[#f6f8ff] px-6 py-5">
-          <DialogTitle className="flex items-center gap-2 text-2xl">
-            <CalendarPlus2 className="size-6 text-[#1e3fe3]" />
-            Apply leave
-          </DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-5 p-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <RequestCalendarPanel
-            helper="Select the start date first, then choose the return date."
-            markers={[
-              { date: '2026-05-28', label: 'Chennai office holiday', tone: 'brand' },
-              { date: '2026-05-30', label: 'Weekend', tone: 'warning' },
-              { date: '2026-06-05', label: 'Regional holiday', tone: 'brand' },
-            ]}
-            onSelectDate={selectDate}
-            selectedDates={[fromDate, toDate].filter(Boolean)}
-            title="My calendar"
-          />
-          <form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
-            <LeaveTypeField formControl={form.control} />
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field error={form.formState.errors.fromDate?.message} label="From" register={form.register('fromDate')} type="date" />
-              <Field error={form.formState.errors.toDate?.message} label="To" register={form.register('toDate')} type="date" />
-              <Field error={form.formState.errors.fromTime?.message} label="From time" register={form.register('fromTime')} type="time" />
-              <Field error={form.formState.errors.toTime?.message} label="To time" register={form.register('toTime')} type="time" />
-            </div>
-            <Field error={form.formState.errors.emergencyContact?.message} label="Emergency contact" register={form.register('emergencyContact')} />
-            <Label>
-              Reason
-              <textarea
-                aria-invalid={Boolean(form.formState.errors.reason)}
-                className="mt-1 min-h-32 w-full rounded-md border border-[#021333]/15 bg-white px-3 py-2 text-sm text-[#021333] outline-none transition focus:border-[#1e3fe3] focus:ring-2 focus:ring-[#1e3fe3]/15"
-                {...form.register('reason')}
-              />
-              {form.formState.errors.reason?.message && <span className="mt-1 block text-xs font-semibold text-rose-600">{form.formState.errors.reason.message}</span>}
-            </Label>
-            <Button type="submit">
-              Submit request
-            </Button>
-          </form>
-        </div>
-      </DialogContent>
-    </Dialog>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {LEAVE_BALANCES.map((leave) => (
+              <TableRow key={leave.leaveType}>
+                <TableCell className="border-r border-[#021333]/10 font-semibold text-[#5c6b8e]">{leave.leaveType}</TableCell>
+                <TableCell className="border-r border-[#021333]/10">{leave.granted}</TableCell>
+                <TableCell className="border-r border-[#021333]/10">{leave.consumed}</TableCell>
+                <TableCell className="border-r border-[#021333]/10">{leave.approvalPending}</TableCell>
+                <TableCell className="border-r border-[#021333]/10">{leave.balance}</TableCell>
+                <TableCell>{leave.encashedCount}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </Card>
   )
 }
 
@@ -276,7 +174,7 @@ function LeaveApplicationPage({ managerView, name }: { managerView: boolean; nam
   }
 
   if (!managerView) {
-    return <MyLeaveRequestsPage leaveRequests={visibleRequests} onCreate={createLeave} />
+    return <MyLeaveRequestsPage onCreate={createLeave} />
   }
 
   return (
@@ -335,15 +233,17 @@ function LeaveApplicationPage({ managerView, name }: { managerView: boolean; nam
 }
 
 function MyLeaveRequestsPage({
-  leaveRequests,
+  onCancel,
   onCreate,
 }: {
-  leaveRequests: ILeaveRequest[]
+  onCancel?: () => void
   onCreate: (values: LeaveRequestSchemaType) => void
 }) {
   const holidays = useLeaveCalendarStore((state) => state.holidays)
   const form = useForm<LeaveRequestSchemaType>({
     defaultValues: {
+      compOffHours: '',
+      compOffWorkedDate: '',
       emergencyContact: '',
       fromDate: '',
       fromTime: '',
@@ -358,6 +258,10 @@ function MyLeaveRequestsPage({
 
   const fromDate = useWatch({ control: form.control, name: 'fromDate' })
   const toDate = useWatch({ control: form.control, name: 'toDate' })
+  const leaveType = useWatch({ control: form.control, name: 'leaveType' })
+  const compOffSelected = leaveType === 'Compensatory Off'
+  const dateStartLabel = compOffSelected ? 'Comp Off from' : 'From'
+  const dateEndLabel = compOffSelected ? 'Comp Off to' : 'To'
 
   function selectDate(date: string) {
     if (!fromDate || (fromDate && toDate)) {
@@ -376,6 +280,8 @@ function MyLeaveRequestsPage({
 
   function resetForm() {
     form.reset({
+      compOffHours: '',
+      compOffWorkedDate: '',
       emergencyContact: '',
       fromDate: '',
       fromTime: '',
@@ -388,6 +294,20 @@ function MyLeaveRequestsPage({
 
   function submit(values: LeaveRequestSchemaType) {
     onCreate(values)
+    if (onCancel) {
+      onCancel()
+      return
+    }
+
+    resetForm()
+  }
+
+  function cancelForm() {
+    if (onCancel) {
+      onCancel()
+      return
+    }
+
     resetForm()
   }
 
@@ -399,42 +319,71 @@ function MyLeaveRequestsPage({
 
   return (
     <>
-      <Card className="overflow-hidden">
-        <div className="border-b border-[#021333]/10 bg-[#f6f8ff] px-6 py-5">
+      <Card className="mx-auto max-w-5xl overflow-hidden">
+        <div className="border-b border-[#021333]/10 bg-[#f6f8ff] px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-lg font-black text-[#021333]">Create leave request</p>
-              <p className="mt-2 text-sm text-[#5c6b8e]">Pick the leave date range before submitting.</p>
+              <p className="text-sm text-[#5c6b8e]">Choose request type, select dates, and submit for manager approval.</p>
             </div>
-            <Button variant="outline" onClick={resetForm} type="button">
+            <Button variant="outline" onClick={cancelForm} type="button">
               Cancel
             </Button>
           </div>
         </div>
 
-        <div className="grid gap-5 p-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_21rem]">
           <RequestCalendarPanel
-            helper="Select the start date first, then choose the return date."
+            helper="Select the leave date range you want to apply for."
             markers={markers}
             onSelectDate={selectDate}
             selectedDates={[fromDate, toDate].filter(Boolean)}
-            title="My attendance calendar"
+            title="Leave calendar"
           />
 
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-[#021333]/10 bg-white p-4 shadow-sm">
-              <p className="text-sm font-bold uppercase text-[#5c6b8e]">Request type</p>
-              <p className="mt-3 text-xl font-black text-[#021333]">{form.watch('leaveType') || 'Select leave type'}</p>
+          <div className="space-y-3">
+            <div>
+              <p className="text-sm font-black text-[#021333]">Request details</p>
+              <p className="mt-1 text-xs font-semibold text-[#5c6b8e]">
+                {compOffSelected
+                  ? 'Use Comp Off when you are applying against extra hours already earned.'
+                  : 'Select the leave type, date range, and time window.'}
+              </p>
             </div>
 
-            <form className="space-y-4" onSubmit={form.handleSubmit(submit)}>
+            <form className="space-y-3" onSubmit={form.handleSubmit(submit)}>
               <LeaveTypeField formControl={form.control} />
 
+              {compOffSelected && (
+                <div className="rounded-md border border-[#021333]/10 bg-[#f6f8ff] p-3">
+                  <p className="text-sm font-black text-[#021333]">Comp Off earned from extra work</p>
+                  <p className="mt-1 text-xs font-semibold text-[#5c6b8e]">Tell HR which extra work day created this Comp Off balance.</p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <Field
+                      error={form.formState.errors.compOffWorkedDate?.message}
+                      label="Worked date"
+                      register={form.register('compOffWorkedDate')}
+                      type="date"
+                    />
+                    <Field
+                      error={form.formState.errors.compOffHours?.message}
+                      label="Earned hours"
+                      register={form.register('compOffHours')}
+                      type="number"
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="grid gap-3 sm:grid-cols-2">
-                <Field error={form.formState.errors.fromDate?.message} label="From" register={form.register('fromDate')} type="date" />
-                <Field error={form.formState.errors.toDate?.message} label="To" register={form.register('toDate')} type="date" />
-                <Field error={form.formState.errors.fromTime?.message} label="From time" register={form.register('fromTime')} type="time" />
-                <Field error={form.formState.errors.toTime?.message} label="To time" register={form.register('toTime')} type="time" />
+                <Field error={form.formState.errors.fromDate?.message} label={dateStartLabel} register={form.register('fromDate')} type="date" />
+                <Field error={form.formState.errors.toDate?.message} label={dateEndLabel} register={form.register('toDate')} type="date" />
+                {!compOffSelected && (
+                  <>
+                    <Field error={form.formState.errors.fromTime?.message} label="From time" register={form.register('fromTime')} type="time" />
+                    <Field error={form.formState.errors.toTime?.message} label="To time" register={form.register('toTime')} type="time" />
+                  </>
+                )}
               </div>
 
               <Field error={form.formState.errors.emergencyContact?.message} label="Emergency contact" register={form.register('emergencyContact')} />
@@ -443,14 +392,14 @@ function MyLeaveRequestsPage({
                 Reason
                 <textarea
                   aria-invalid={Boolean(form.formState.errors.reason)}
-                  className="mt-1 min-h-32 w-full rounded-md border border-[#021333]/15 bg-white px-3 py-2 text-sm text-[#021333] outline-none transition focus:border-[#1e3fe3] focus:ring-2 focus:ring-[#1e3fe3]/15"
+                  className="mt-1 min-h-24 w-full rounded-md border border-[#021333]/15 bg-white px-3 py-2 text-sm text-[#021333] outline-none transition focus:border-[#1e3fe3] focus:ring-2 focus:ring-[#1e3fe3]/15"
                   {...form.register('reason')}
                 />
                 {form.formState.errors.reason?.message && <span className="mt-1 block text-xs font-semibold text-rose-600">{form.formState.errors.reason?.message}</span>}
               </Label>
 
               <div className="flex flex-wrap items-center justify-end gap-2">
-                <Button variant="outline" onClick={resetForm} type="button">
+                <Button variant="outline" onClick={cancelForm} type="button">
                   Cancel
                 </Button>
                 <Button type="submit">Submit</Button>
@@ -464,20 +413,136 @@ function MyLeaveRequestsPage({
 }
 
 function LeaveAdminPage() {
+  const [policies, setPolicies] = useState<ILeaveTypePolicy[]>(LEAVE_POLICIES)
+  const [addMode, setAddMode] = useState(false)
+  const [editingPolicyId, setEditingPolicyId] = useState<string | null>(null)
+  const form = useForm<LeavePolicySchemaType>({
+    defaultValues: {
+      annualQuota: '0',
+      balanceLevel: 'Limited',
+      cashable: 'No',
+      gender: 'All',
+      status: 'Active',
+      type: '',
+    },
+    mode: 'onChange',
+    resolver: zodResolver(leavePolicySchema),
+  })
+
+  function resetPolicyForm() {
+    form.reset({
+      annualQuota: '0',
+      balanceLevel: 'Limited',
+      cashable: 'No',
+      gender: 'All',
+      status: 'Active',
+      type: '',
+    })
+    setAddMode(false)
+    setEditingPolicyId(null)
+  }
+
+  function savePolicy(values: LeavePolicySchemaType) {
+    if (editingPolicyId) {
+      setPolicies((current) =>
+        current.map((policy) => (policy.id === editingPolicyId ? { ...policy, ...values } : policy)),
+      )
+      toast.success('Leave policy updated successfully.')
+      resetPolicyForm()
+      return
+    }
+
+    setPolicies((current) => [{ ...values, id: `leave-policy-${Date.now()}` }, ...current])
+    resetPolicyForm()
+    toast.success('Leave policy added successfully.')
+  }
+
+  function editPolicy(policy: ILeaveTypePolicy) {
+    setEditingPolicyId(policy.id)
+    setAddMode(true)
+    form.reset({
+      annualQuota: policy.annualQuota,
+      balanceLevel: policy.balanceLevel,
+      cashable: policy.cashable,
+      gender: policy.gender,
+      status: policy.status,
+      type: policy.type,
+    })
+  }
+
+  function removePolicy(id: string) {
+    setPolicies((current) => current.filter((policy) => policy.id !== id))
+    toast.success('Leave policy removed successfully.')
+  }
+
   return (
     <Card className="p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <LeaveToolbar filters={['Status', 'Cashable', 'Leave For']} />
-        <Button>
+        <Button onClick={() => setAddMode(true)} type="button">
           <CalendarPlus2 className="size-4" />
           Add Leave
         </Button>
       </div>
+
+      {addMode && (
+        <div className="mt-4 rounded-lg border border-[#021333]/10 bg-[#f6f8ff] p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-lg font-black text-[#021333]">{editingPolicyId ? 'Edit leave policy' : 'Add leave policy'}</p>
+              <p className="text-sm font-semibold text-[#5c6b8e]">Set the annual quota to increase employee leave entitlement for this policy.</p>
+            </div>
+            <Button onClick={resetPolicyForm} type="button" variant="outline">
+              Cancel
+            </Button>
+          </div>
+
+          <form className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-6" onSubmit={form.handleSubmit(savePolicy)}>
+            <Field error={form.formState.errors.type?.message} label="Leave type" register={form.register('type')} />
+            <Field error={form.formState.errors.annualQuota?.message} label="Annual quota" register={form.register('annualQuota')} type="number" />
+            <PolicySelectField
+              control={form.control}
+              error={form.formState.errors.cashable?.message}
+              label="Cashable"
+              name="cashable"
+              options={['No', 'Yes']}
+            />
+            <PolicySelectField
+              control={form.control}
+              error={form.formState.errors.gender?.message}
+              label="Leave for"
+              name="gender"
+              options={['All', 'Married Male', 'Married Female', 'Women', 'Men']}
+            />
+            <PolicySelectField
+              control={form.control}
+              error={form.formState.errors.balanceLevel?.message}
+              label="Balance level"
+              name="balanceLevel"
+              options={['Limited', 'Unlimited', 'Accrual based']}
+            />
+            <PolicySelectField
+              control={form.control}
+              error={form.formState.errors.status?.message}
+              label="Status"
+              name="status"
+              options={['Active', 'Inactive']}
+            />
+            <div className="flex items-end gap-2 md:col-span-2 xl:col-span-6">
+              <Button type="submit">{editingPolicyId ? 'Update leave policy' : 'Save leave policy'}</Button>
+              <Button onClick={resetPolicyForm} type="button" variant="outline">
+                Clear
+              </Button>
+            </div>
+          </form>
+        </div>
+      )}
+
       <div className="mt-4 overflow-x-auto rounded-lg border border-[#021333]/10">
         <Table className="min-w-[760px] border-separate border-spacing-0">
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              {['Type', 'Cashable', 'Leave For', 'Balance Level', 'Status', 'Action'].map((heading) => (
+              {['Type', 'Annual Quota', 'Cashable', 'Leave For', 'Balance Level', 'Status', 'Action'].map((heading) => (
                 <TableHead className="border-b border-r border-[#021333]/10 bg-white last:border-r-0" key={heading}>
                   {heading}
                 </TableHead>
@@ -485,17 +550,26 @@ function LeaveAdminPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {LEAVE_POLICIES.map((policy) => (
+            {policies.map((policy) => (
               <TableRow key={policy.id}>
                 <TableCell className="border-r border-[#021333]/10 font-semibold text-[#1e3fe3] underline decoration-[#1e3fe3]/30">{policy.type}</TableCell>
+                <TableCell className="border-r border-[#021333]/10">{policy.annualQuota} days</TableCell>
                 <TableCell className="border-r border-[#021333]/10">{policy.cashable}</TableCell>
                 <TableCell className="border-r border-[#021333]/10">{policy.gender}</TableCell>
                 <TableCell className="border-r border-[#021333]/10">{policy.balanceLevel}</TableCell>
                 <TableCell className="border-r border-[#021333]/10"><Badge tone={policy.status === 'Active' ? 'success' : 'danger'}>{policy.status}</Badge></TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2 text-[#5c6b8e]">
-                    <Edit3 className="size-4" />
-                    <Trash2 className="size-4 text-rose-500" />
+                    <button className="rounded-md p-1 transition hover:bg-[#eaf0ff] hover:text-[#021333]" onClick={() => editPolicy(policy)} type="button">
+                      <Edit3 className="size-4" />
+                    </button>
+                    <button
+                      className="rounded-md p-1 text-rose-500 transition hover:bg-rose-50"
+                      onClick={() => removePolicy(policy.id)}
+                      type="button"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -555,7 +629,17 @@ const MONTH_NAMES = [
 ]
 
 function HolidayCalendarPage() {
-  const holidays = useLeaveCalendarStore((state) => state.holidays)
+  const { addHoliday, addHolidays, holidays } = useLeaveCalendarStore()
+  const [addHolidayMode, setAddHolidayMode] = useState(false)
+  const holidayForm = useForm<HolidaySchemaType>({
+    defaultValues: {
+      date: '',
+      location: '',
+      name: '',
+    },
+    mode: 'onChange',
+    resolver: zodResolver(holidaySchema),
+  })
   const additionalHolidays = holidays.map((holiday) => ({
     date: holiday.date,
     name: holiday.name,
@@ -564,9 +648,34 @@ function HolidayCalendarPage() {
   }))
   const yearlyHolidays = [...YEARLY_HOLIDAYS, ...additionalHolidays]
 
+  function submitHoliday(values: HolidaySchemaType) {
+    addHoliday(values)
+    holidayForm.reset({ date: '', location: '', name: '' })
+    setAddHolidayMode(false)
+    toast.success('Holiday added successfully.')
+  }
+
+  async function importHolidays(file?: File) {
+    if (!file) {
+      return
+    }
+
+    const text = await file.text()
+    const imported = parseHolidayCsv(text)
+
+    if (!imported.length) {
+      toast.error('Import failed. Use CSV columns: date,name,location.')
+      return
+    }
+
+    addHolidays(imported)
+    toast.success(`${imported.length} holidays imported successfully.`)
+  }
+
   return (
     <Card className="p-4">
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
         <Select defaultValue="All">
           <SelectTrigger className="h-8 w-40">
             <SelectValue placeholder="Holiday Type" />
@@ -591,7 +700,56 @@ function HolidayCalendarPage() {
         <Button className="min-h-8 px-2.5 text-xs" variant="outline">
           Clear All
         </Button>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button className="min-h-8 px-3 text-xs" onClick={() => setAddHolidayMode(true)} type="button">
+            <CalendarPlus2 className="size-4" />
+            Add holiday
+          </Button>
+          <Label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-[#021333]/15 bg-white px-3 py-2 text-xs font-bold text-[#021333] shadow-sm transition hover:bg-[#f6f8ff]">
+            <Upload className="size-4 text-[#1e3fe3]" />
+            Import
+            <input
+              accept=".csv,text/csv"
+              className="sr-only"
+              onChange={(event) => {
+                void importHolidays(event.target.files?.[0])
+                event.target.value = ''
+              }}
+              type="file"
+            />
+          </Label>
+        </div>
       </div>
+
+      {addHolidayMode && (
+        <div className="mt-4 rounded-lg border border-[#021333]/10 bg-[#f6f8ff] p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-lg font-black text-[#021333]">Add holiday manually</p>
+              <p className="text-sm font-semibold text-[#5c6b8e]">Create location, shift, or business-unit holidays for the calendar.</p>
+            </div>
+            <Button onClick={() => setAddHolidayMode(false)} type="button" variant="outline">
+              Cancel
+            </Button>
+          </div>
+          <form className="mt-4 grid gap-3 md:grid-cols-3" onSubmit={holidayForm.handleSubmit(submitHoliday)}>
+            <Field error={holidayForm.formState.errors.date?.message} label="Holiday date" register={holidayForm.register('date')} type="date" />
+            <Field error={holidayForm.formState.errors.name?.message} label="Holiday name" register={holidayForm.register('name')} />
+            <Field error={holidayForm.formState.errors.location?.message} label="Location or shift" register={holidayForm.register('location')} />
+            <div className="flex items-end gap-2 md:col-span-3">
+              <Button type="submit">Save holiday</Button>
+              <Button
+                onClick={() => holidayForm.reset({ date: '', location: '', name: '' })}
+                type="button"
+                variant="outline"
+              >
+                Clear
+              </Button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {MONTH_NAMES.map((month, monthIndex) => {
@@ -633,6 +791,22 @@ function HolidayCalendarPage() {
       </div>
     </Card>
   )
+}
+
+function parseHolidayCsv(csvText: string): HolidaySchemaType[] {
+  const rows = csvText
+    .split(/\r?\n/)
+    .map((row) => row.trim())
+    .filter(Boolean)
+
+  const dataRows = rows[0]?.toLowerCase().startsWith('date,') ? rows.slice(1) : rows
+
+  return dataRows.flatMap((row) => {
+    const [date, name, location] = row.split(',').map((cell) => cell.trim())
+    const parsed = holidaySchema.safeParse({ date, location, name })
+
+    return parsed.success ? [parsed.data] : []
+  })
 }
 
 function LeaveToolbar({
@@ -692,10 +866,49 @@ function LeaveTypeField({ formControl }: { formControl: Control<LeaveRequestSche
               <SelectItem value="Casual leave">Casual leave</SelectItem>
               <SelectItem value="Sick leave">Sick leave</SelectItem>
               <SelectItem value="Earned leave">Earned leave</SelectItem>
-              <SelectItem value="Compensatory Off">Compensatory Off</SelectItem>
+              <SelectItem value="Compensatory Off">Comp Off</SelectItem>
               <SelectItem value="Loss Of Pay">Loss Of Pay</SelectItem>
             </SelectContent>
           </Select>
+        </Label>
+      )}
+    />
+  )
+}
+
+function PolicySelectField({
+  control,
+  error,
+  label,
+  name,
+  options,
+}: {
+  control: Control<LeavePolicySchemaType>
+  error?: string
+  label: string
+  name: keyof LeavePolicySchemaType
+  options: string[]
+}) {
+  return (
+    <Controller
+      control={control}
+      name={name}
+      render={({ field }) => (
+        <Label>
+          {label}
+          <Select onValueChange={field.onChange} value={field.value}>
+            <SelectTrigger aria-invalid={Boolean(error)} className="mt-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {options.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {error && <span className="mt-1 block text-xs font-semibold text-rose-600">{error}</span>}
         </Label>
       )}
     />

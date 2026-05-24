@@ -118,6 +118,10 @@ export function AttendanceConsole() {
         </header>
         <main className="p-3 sm:p-4">
           <Breadcrumb className="mb-3" items={getPageBreadcrumb(activePage).map((label) => ({ label }))} onHome={() => setActivePage('dashboard')} />
+          <div className="mb-3">
+            <h1 className="text-xl font-black text-[#021333]">{getConsoleTitle(activePage, role)}</h1>
+            <p className="text-sm font-semibold text-[#5c6b8e]">{getConsoleSubtitle(activePage, role)}</p>
+          </div>
           <AnimatePresence mode="wait">
             <motion.div
               animate={{ opacity: 1, y: 0 }}
@@ -198,5 +202,45 @@ function ConsolePage({
     return managerView ? <TeamCalendarPage /> : <EmployeeCalendarPage />
   }
 
-  return managerView ? <ManagerDashboard /> : <EmployeeDashboard onOpenLeaveApplication={() => onPage('leave-application')} />
+  return managerView ? <ManagerDashboard role={role === 'Admin' ? 'Admin' : 'Manager'} /> : <EmployeeDashboard onOpenLeaveApplication={() => onPage('leave-application')} />
+}
+
+function getConsoleTitle(page: ConsolePageType, role: 'Employee' | 'Manager' | 'Admin') {
+  if (page === 'dashboard' && role === 'Admin') {
+    return 'Admin dashboard'
+  }
+
+  if (page === 'dashboard' && role === 'Manager') {
+    return 'Manager dashboard'
+  }
+
+  return PAGE_TITLES[page]
+}
+
+function getConsoleSubtitle(page: ConsolePageType, role: 'Employee' | 'Manager' | 'Admin') {
+  if (page === 'dashboard' && role === 'Admin') {
+    return 'Monitor check-ins, late logins, approvals, access, and workforce setup.'
+  }
+
+  if (page === 'dashboard' && role === 'Manager') {
+    return 'Track team attendance, exceptions, and approval queues.'
+  }
+
+  if (page === 'dashboard') {
+    return 'Track your check-in, working hours, late marks, and leave actions.'
+  }
+
+  if (page.startsWith('leave')) {
+    return 'Manage leave balances, applications, holidays, and policy setup.'
+  }
+
+  if (page === 'regularization') {
+    return 'Create, review, and approve attendance correction requests.'
+  }
+
+  if (page.startsWith('attendance')) {
+    return 'Review attendance, swipes, calendar status, and work-hour history.'
+  }
+
+  return 'Keep employee and workforce information organized.'
 }
