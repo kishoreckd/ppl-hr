@@ -12,6 +12,8 @@ export type ConsolePageType =
   | 'leave-admin'
   | 'leave-calendar'
 
+export type ConsoleRoleType = 'Employee' | 'Manager' | 'Admin'
+
 export const PAGE_TITLES: Record<ConsolePageType, string> = {
   'attendance-calendar': 'Attendance calendar',
   'attendance-history': 'Attendance history',
@@ -25,6 +27,26 @@ export const PAGE_TITLES: Record<ConsolePageType, string> = {
   regularization: 'Regularization applications',
   'team-attendance': 'Team attendance',
   'team-calendar': 'Team calendar',
+}
+
+export const CONSOLE_PAGE_PATHS: Record<ConsolePageType, string> = {
+  'attendance-calendar': '/attendance-calendar',
+  'attendance-history': '/attendance-history',
+  'attendance-info': '/attendance-info',
+  dashboard: '/dashboard',
+  'leave-admin': '/leave-admin',
+  'leave-application': '/leave-application',
+  'leave-balance': '/leave-balance',
+  'leave-calendar': '/leave-calendar',
+  profile: '/profile',
+  regularization: '/regularization',
+  'team-attendance': '/team-attendance',
+  'team-calendar': '/team-calendar',
+}
+
+export function getConsolePageFromPath(pathname: string): ConsolePageType | null {
+  const match = Object.entries(CONSOLE_PAGE_PATHS).find(([, path]) => path === pathname)
+  return match ? (match[0] as ConsolePageType) : null
 }
 
 export function getPageBreadcrumb(page: ConsolePageType): string[] {
@@ -52,17 +74,66 @@ export function getPageBreadcrumb(page: ConsolePageType): string[] {
   return [PAGE_TITLES[page]]
 }
 
-export function getMobilePages(managerView: boolean): ConsolePageType[] {
-  return managerView
-    ? ['dashboard', 'profile', 'team-attendance', 'team-calendar', 'regularization', 'leave-application', 'leave-calendar']
-    : [
-        'dashboard',
-        'profile',
-        'attendance-info',
-        'attendance-calendar',
-        'attendance-history',
-        'regularization',
-        'leave-balance',
-        'leave-calendar',
-      ]
+export const ROLE_PAGE_RULES: Record<ConsoleRoleType, ConsolePageType[]> = {
+  Admin: [
+    'dashboard',
+    'profile',
+    'attendance-info',
+    'attendance-calendar',
+    'attendance-history',
+    'regularization',
+    'team-attendance',
+    'team-calendar',
+    'leave-balance',
+    'leave-application',
+    'leave-calendar',
+    'leave-admin',
+  ],
+  Employee: [
+    'dashboard',
+    'profile',
+    'attendance-info',
+    'attendance-calendar',
+    'attendance-history',
+    'regularization',
+    'leave-balance',
+    'leave-application',
+    'leave-calendar',
+  ],
+  Manager: [
+    'dashboard',
+    'profile',
+    'attendance-info',
+    'attendance-calendar',
+    'attendance-history',
+    'regularization',
+    'team-attendance',
+    'team-calendar',
+    'leave-balance',
+    'leave-application',
+    'leave-calendar',
+  ],
+}
+
+export function getPagesForRole(role: ConsoleRoleType): ConsolePageType[] {
+  return ROLE_PAGE_RULES[role]
+}
+
+export function canAccessPage(role: ConsoleRoleType, page: ConsolePageType) {
+  return ROLE_PAGE_RULES[role].includes(page)
+}
+
+export function getMobilePages(role: ConsoleRoleType): ConsolePageType[] {
+  const allowed = getPagesForRole(role)
+  return [
+    'dashboard',
+    'profile',
+    'attendance-info',
+    'attendance-calendar',
+    'team-attendance',
+    'regularization',
+    'leave-balance',
+    'leave-application',
+    'leave-calendar',
+  ].filter((page): page is ConsolePageType => allowed.includes(page as ConsolePageType))
 }

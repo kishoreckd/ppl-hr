@@ -2,10 +2,16 @@ export type UserRoleType = 'HR Admin' | 'Manager' | 'Employee'
 export type ApprovalStatusType = 'Pending' | 'Escalating' | 'Policy check'
 
 export interface ICompanySetup {
+  adminEmployees: string
+  companyDomain: string
   companyName: string
-  headName: string
-  location: string
+  companyWebsite: string
+  email: string
   employeeBand: string
+  firstName: string
+  headName: string
+  lastName: string
+  location: string
 }
 
 export interface IApprovalRequest {

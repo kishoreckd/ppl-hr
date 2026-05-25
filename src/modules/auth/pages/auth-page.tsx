@@ -1,14 +1,16 @@
 import { motion } from 'framer-motion'
 import { CalendarDays, Clock3, Layers3 } from 'lucide-react'
-import { useState } from 'react'
 import { Badge } from '../../../shared/components/ui/badge'
 import { Card } from '../../../shared/components/ui/card'
 import { AuthForms } from '../components/auth-forms'
 import type { AuthModeType } from '../types/auth-types'
 
-export function AuthPage() {
-  const [mode, setMode] = useState<AuthModeType>('login')
+interface IAuthPageProps {
+  mode: AuthModeType
+  setMode: (mode: AuthModeType) => void
+}
 
+export function AuthPage({ mode, setMode }: IAuthPageProps) {
   return (
     <main className="teampilot-grid grid min-h-screen items-center bg-[#f4f7ff] p-4 lg:grid-cols-[1.05fr_0.95fr] lg:p-8">
       <motion.section

@@ -18,7 +18,7 @@ import { motion } from 'framer-motion'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { Badge } from '../../../shared/components/ui/badge'
-import type { ConsolePageType } from '../types/console-types'
+import { canAccessPage, type ConsolePageType, type ConsoleRoleType } from '../types/console-types'
 
 interface IAttendanceSidebarProps {
   activePage: ConsolePageType
@@ -26,7 +26,7 @@ interface IAttendanceSidebarProps {
   managerView: boolean
   onCollapse: () => void
   onPage: (page: ConsolePageType) => void
-  role: string
+  role: ConsoleRoleType
 }
 
 export function AttendanceSidebar({
@@ -105,7 +105,7 @@ export function AttendanceSidebar({
             <SubItem active={activePage === 'attendance-calendar'} label="Calendar" onClick={() => navigatePage('attendance-calendar')} />
             <SubItem active={activePage === 'attendance-history'} label="History" onClick={() => navigatePage('attendance-history')} />
             <SubItem active={activePage === 'regularization'} label="Regularizations" onClick={() => navigatePage('regularization')} />
-            {managerView && (
+            {canAccessPage(role, 'team-attendance') && (
               <>
                 <SubItem active={activePage === 'team-attendance'} label="Team attendance" onClick={() => navigatePage('team-attendance')} />
                 <SubItem active={activePage === 'team-calendar'} label="Team calendar" onClick={() => navigatePage('team-calendar')} />
@@ -120,17 +120,17 @@ export function AttendanceSidebar({
             open={openGroups.leave}
           >
             <SubItem active={activePage === 'leave-balance'} label="Leave balance" onClick={() => navigatePage('leave-balance')} />
-            {managerView && <SubItem active={activePage === 'leave-application'} label="Leave approvals" onClick={() => navigatePage('leave-application')} />}
+            <SubItem active={activePage === 'leave-application'} label={managerView ? 'Leave approvals' : 'Leave application'} onClick={() => navigatePage('leave-application')} />
             <SubItem active={activePage === 'leave-calendar'} label="Holiday calendar" onClick={() => navigatePage('leave-calendar')} />
-            {role === 'Admin' && <SubItem active={activePage === 'leave-admin'} label="Leave setup" onClick={() => navigatePage('leave-admin')} />}
+            {canAccessPage(role, 'leave-admin') && <SubItem active={activePage === 'leave-admin'} label="Leave setup" onClick={() => navigatePage('leave-admin')} />}
           </MenuGroup>
           <SideItem collapsed={collapsed} icon={<Building2 className="size-4" />} label="Company" onClick={() => navigatePage('dashboard')} selected={false} />
         </NavSection>
 
         <NavSection last>
-          <SideItem collapsed={collapsed} icon={<ContactRound className="size-4" />} label="Team" onClick={() => navigatePage('team-attendance')} selected={false} />
+          {canAccessPage(role, 'team-attendance') && <SideItem collapsed={collapsed} icon={<ContactRound className="size-4" />} label="Team" onClick={() => navigatePage('team-attendance')} selected={false} />}
           <SideItem collapsed={collapsed} icon={<UserRoundPlus className="size-4" />} label="Recruitment" onClick={() => navigatePage('dashboard')} selected={false} />
-          <SideItem collapsed={collapsed} icon={<UsersRound className="size-4" />} label="Employees" onClick={() => navigatePage('team-attendance')} selected={false} />
+          {canAccessPage(role, 'team-attendance') && <SideItem collapsed={collapsed} icon={<UsersRound className="size-4" />} label="Employees" onClick={() => navigatePage('team-attendance')} selected={false} />}
           <SideItem collapsed={collapsed} icon={<Mail className="size-4" />} label="Email Subscription" onClick={() => navigatePage('dashboard')} selected={false} />
           <SideItem collapsed={collapsed} icon={<Settings2 className="size-4" />} label="Settings" onClick={() => undefined} selected={false} />
         </NavSection>

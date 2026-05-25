@@ -73,10 +73,46 @@ export function SetupJourney() {
         {currentStep === 0 && (
           <form className="grid gap-4 md:grid-cols-2" onSubmit={form.handleSubmit(saveCompany)}>
             <Field
+              error={form.formState.errors.firstName?.message}
+              label="First name"
+              placeholder="Priya"
+              registration={form.register('firstName')}
+            />
+            <Field
+              error={form.formState.errors.lastName?.message}
+              label="Last name"
+              placeholder="Raman"
+              registration={form.register('lastName')}
+            />
+            <Field
+              error={form.formState.errors.email?.message}
+              label="Email"
+              placeholder="priya@cxontology.com"
+              registration={form.register('email')}
+            />
+            <Field
               error={form.formState.errors.companyName?.message}
               label="Company name"
               placeholder="CXO People Cloud"
               registration={form.register('companyName')}
+            />
+            <Field
+              error={form.formState.errors.companyDomain?.message}
+              label="Company domain"
+              placeholder="cxontology.com"
+              registration={form.register('companyDomain')}
+            />
+            <Field
+              error={form.formState.errors.companyWebsite?.message}
+              label="Company website"
+              placeholder="https://cxontology.com"
+              registration={form.register('companyWebsite')}
+            />
+            <Field
+              error={form.formState.errors.adminEmployees?.message}
+              label="Admin employees"
+              placeholder="Priya HR, Arun Admin"
+              registration={form.register('adminEmployees')}
             />
             <Field
               error={form.formState.errors.headName?.message}

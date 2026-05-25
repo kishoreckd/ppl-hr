@@ -12,9 +12,15 @@ interface IOrganizationState {
 
 export const useOrganizationStore = create<IOrganizationState>((set) => ({
   company: {
+    adminEmployees: '',
+    companyDomain: '',
     companyName: '',
+    companyWebsite: '',
+    email: '',
     employeeBand: '201-1000 employees',
+    firstName: '',
     headName: '',
+    lastName: '',
     location: 'Chennai',
   },
   currentStep: 0,

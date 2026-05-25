@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Bell, CircleUserRound, LogOut, Menu, MoonStar, Search, SunMedium } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { Button } from '../../../shared/components/ui/button'
 import { Breadcrumb } from '../../../shared/components/ui/breadcrumb'
@@ -11,18 +11,23 @@ import { LeaveCalendarPage } from '../../calendar'
 import {
   EmployeeAttendancePage,
   EmployeeCalendarPage,
-  EmployeeDashboard,
   EmployeeHistoryPage,
 } from '../../employee'
-import { ManagerDashboard, TeamAttendancePage, TeamCalendarPage } from '../../manager'
+import { TeamAttendancePage, TeamCalendarPage } from '../../manager'
 import { ProfilePage } from '../../profile'
 import { AttendanceSidebar } from '../components/attendance-sidebar'
 import { AttendancePunchAction } from '../components/attendance-punch-action'
 import { RegularizationPage } from './regularization-page'
-import { getMobilePages, getPageBreadcrumb, PAGE_TITLES, type ConsolePageType } from '../types/console-types'
+import { ProductDashboard } from './product-dashboard'
+import { canAccessPage, getMobilePages, getPageBreadcrumb, PAGE_TITLES, type ConsolePageType } from '../types/console-types'
 
-export function AttendanceConsole() {
-  const [activePage, setActivePage] = useState<ConsolePageType>('dashboard')
+interface IAttendanceConsoleProps {
+  activePage: ConsolePageType
+  onPage: (page: ConsolePageType) => void
+  onLogout: () => void
+}
+
+export function AttendanceConsole({ activePage, onLogout, onPage }: IAttendanceConsoleProps) {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileMenu, setMobileMenu] = useState(false)
   const { session, setSession } = useAuthStore()
@@ -31,6 +36,13 @@ export function AttendanceConsole() {
   const role = user.role
   const managerView = role === 'Manager' || role === 'Admin'
 
+  useEffect(() => {
+    if (!canAccessPage(role, activePage)) {
+      onPage('dashboard')
+      toast.info('That page is not available for this role.')
+    }
+  }, [activePage, onPage, role])
+
   return (
     <div className={`teampilot-shell ${dark ? 'teampilot-dark' : ''} teampilot-grid flex min-h-screen`}>
       <AttendanceSidebar
@@ -38,7 +50,7 @@ export function AttendanceConsole() {
         collapsed={collapsed}
         managerView={managerView}
         onCollapse={() => setCollapsed((value) => !value)}
-        onPage={setActivePage}
+        onPage={onPage}
         role={role}
       />
       <div className="min-w-0 flex-1">
@@ -79,7 +91,7 @@ export function AttendanceConsole() {
               <button
                 aria-label="Open profile"
                 className="grid size-9 place-items-center rounded-full bg-[#eaf0ff] text-[#1e3fe3] transition hover:ring-2 hover:ring-[#1e3fe3]/20"
-                onClick={() => setActivePage('profile')}
+                onClick={() => onPage('profile')}
                 type="button"
               >
                 <CircleUserRound className="size-6" />
@@ -88,6 +100,7 @@ export function AttendanceConsole() {
                 aria-label="Logout"
                 onClick={() => {
                   setSession(null)
+                  onLogout()
                   toast.info('Logged out.')
                 }}
                 variant="ghost"
@@ -98,14 +111,14 @@ export function AttendanceConsole() {
           </div>
           {mobileMenu && (
             <div className="mt-3 grid gap-1 rounded-lg border border-[#021333]/10 bg-white p-2 lg:hidden">
-              {getMobilePages(managerView).map((page) => (
+              {getMobilePages(role).map((page) => (
                 <button
                   className={`rounded-md px-3 py-2 text-left text-sm font-bold ${
                     page === activePage ? 'bg-[#eaf0ff] text-[#021333]' : 'text-[#5c6b8e]'
                   }`}
                   key={page}
                   onClick={() => {
-                    setActivePage(page)
+                    onPage(page)
                     setMobileMenu(false)
                   }}
                   type="button"
@@ -117,9 +130,9 @@ export function AttendanceConsole() {
           )}
         </header>
         <main className="p-3 sm:p-4">
-          <Breadcrumb className="mb-3" items={getPageBreadcrumb(activePage).map((label) => ({ label }))} onHome={() => setActivePage('dashboard')} />
+          <Breadcrumb className="mb-3" items={getPageBreadcrumb(activePage).map((label) => ({ label }))} onHome={() => onPage('dashboard')} />
           <div className="mb-3">
-            <h1 className="text-xl font-black text-[#021333]">{getConsoleTitle(activePage, role)}</h1>
+            <h1 className="text-xl font-black text-[#021333]">{getConsoleTitle(activePage)}</h1>
             <p className="text-sm font-semibold text-[#5c6b8e]">{getConsoleSubtitle(activePage, role)}</p>
           </div>
           <AnimatePresence mode="wait">
@@ -130,7 +143,7 @@ export function AttendanceConsole() {
               key={`${role}-${activePage}`}
               transition={{ duration: 0.22, ease: 'easeOut' }}
             >
-              <ConsolePage activePage={activePage} managerView={managerView} name={user.name} onPage={setActivePage} role={role} user={user} />
+              <ConsolePage activePage={activePage} managerView={managerView} name={user.name} onPage={onPage} role={role} user={user} />
             </motion.div>
           </AnimatePresence>
         </main>
@@ -195,39 +208,25 @@ function ConsolePage({
   }
 
   if (activePage === 'team-attendance') {
-    return managerView ? <TeamAttendancePage /> : <EmployeeDashboard onOpenLeaveApplication={() => onPage('leave-application')} />
+    return managerView ? <TeamAttendancePage /> : <ProductDashboard onPage={onPage} role={role} />
   }
 
   if (activePage === 'team-calendar') {
     return managerView ? <TeamCalendarPage /> : <EmployeeCalendarPage />
   }
 
-  return managerView ? <ManagerDashboard role={role === 'Admin' ? 'Admin' : 'Manager'} /> : <EmployeeDashboard onOpenLeaveApplication={() => onPage('leave-application')} />
+  return <ProductDashboard onPage={onPage} role={role} />
 }
 
-function getConsoleTitle(page: ConsolePageType, role: 'Employee' | 'Manager' | 'Admin') {
-  if (page === 'dashboard' && role === 'Admin') {
-    return 'Admin dashboard'
-  }
-
-  if (page === 'dashboard' && role === 'Manager') {
-    return 'Manager dashboard'
-  }
-
+function getConsoleTitle(page: ConsolePageType) {
   return PAGE_TITLES[page]
 }
 
 function getConsoleSubtitle(page: ConsolePageType, role: 'Employee' | 'Manager' | 'Admin') {
-  if (page === 'dashboard' && role === 'Admin') {
-    return 'Monitor check-ins, late logins, approvals, access, and workforce setup.'
-  }
-
-  if (page === 'dashboard' && role === 'Manager') {
-    return 'Track team attendance, exceptions, and approval queues.'
-  }
-
   if (page === 'dashboard') {
-    return 'Track your check-in, working hours, late marks, and leave actions.'
+    return role === 'Employee'
+      ? 'Track check-ins, leave, history, and requests from one workspace.'
+      : 'Track team attendance, exceptions, leave, and approvals from one workspace.'
   }
 
   if (page.startsWith('leave')) {
