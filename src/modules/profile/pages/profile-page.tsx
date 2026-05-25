@@ -16,6 +16,7 @@ import { Button } from '../../../shared/components/ui/button'
 import { Card } from '../../../shared/components/ui/card'
 import { Input } from '../../../shared/components/ui/input'
 import { Label } from '../../../shared/components/ui/label'
+import { SegmentedPills } from '../../../shared/components/ui/segmented-pills'
 import { Skeleton } from '../../../shared/components/ui/skeleton'
 import type { IAuthUser } from '../../auth/types/auth-types'
 import { ProfileFieldGrid } from '../components/profile-field-grid'
@@ -102,18 +103,7 @@ export function ProfilePage({ user }: { user: IAuthUser }) {
         </div>
       </Card>
 
-      <div className="flex flex-wrap gap-2">
-        {PROFILE_SECTIONS.map((section) => (
-          <Button
-            className="min-h-9"
-            key={section.value}
-            onClick={() => setActiveSection(section.value)}
-            variant={currentSection === section.value ? 'default' : 'outline'}
-          >
-            {section.label}
-          </Button>
-        ))}
-      </div>
+      <SegmentedPills items={PROFILE_SECTIONS} onValueChange={setActiveSection} value={currentSection} />
 
       <motion.div
         animate={{ opacity: 1, y: 0 }}

@@ -8,6 +8,7 @@ import { toast } from 'react-toastify'
 import { Button } from '../../../shared/components/ui/button'
 import { Input } from '../../../shared/components/ui/input'
 import { Label } from '../../../shared/components/ui/label'
+import { SegmentedPills } from '../../../shared/components/ui/segmented-pills'
 import { useOrganizationStore } from '../../organization/store'
 import { companySchema, type CompanySchemaType } from '../../organization/validations/company-schema'
 
@@ -35,6 +36,10 @@ const SETUP_STEPS = [
     title: 'Add admin employees',
   },
 ]
+const SETUP_STEP_PILLS = SETUP_STEPS.map((item, index) => ({
+  label: `${index + 1}. ${item.eyebrow}`,
+  value: String(index),
+}))
 
 export function PreLoginSetupPage({ onComplete }: IPreLoginSetupPageProps) {
   const { company, setCompany } = useOrganizationStore()
@@ -122,22 +127,12 @@ export function PreLoginSetupPage({ onComplete }: IPreLoginSetupPageProps) {
           </div>
 
           <div className="my-auto w-full max-w-2xl py-10">
-            <div className="mb-8 flex flex-wrap gap-2">
-              {SETUP_STEPS.map((item, index) => (
-                <button
-                  className={`rounded-full border px-4 py-2 text-sm font-extrabold transition ${
-                    step === index
-                      ? 'border-[#1e3fe3] bg-[#eaf0ff] text-[#1e3fe3]'
-                      : 'border-[#d8deea] bg-white text-[#65708a] hover:border-[#1e3fe3]/40'
-                  }`}
-                  key={item.title}
-                  onClick={() => setStep(index)}
-                  type="button"
-                >
-                  {index + 1}. {item.eyebrow}
-                </button>
-              ))}
-            </div>
+            <SegmentedPills
+              className="mb-8"
+              items={SETUP_STEP_PILLS}
+              onValueChange={(value) => setStep(Number(value))}
+              value={String(step)}
+            />
 
             <motion.div animate={{ opacity: 1, y: 0 }} initial={{ opacity: 0, y: 10 }} key={step} transition={{ duration: 0.24 }}>
               <span className="grid size-14 place-items-center rounded-2xl bg-[#eaf0ff] text-[#1e3fe3]">
