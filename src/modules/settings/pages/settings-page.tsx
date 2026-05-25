@@ -1,7 +1,6 @@
 import { Plus, ShieldCheck, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'react-toastify'
-import { Badge } from '../../../shared/components/ui/badge'
 import { Button } from '../../../shared/components/ui/button'
 import { Card } from '../../../shared/components/ui/card'
 import { Input } from '../../../shared/components/ui/input'
@@ -85,7 +84,6 @@ export function SettingsPage({ role }: ISettingsPageProps) {
             <p className="text-xs font-black uppercase tracking-[0.08em] text-[#5c6b8e]">Roles</p>
             <h2 className="text-2xl font-black tracking-[-0.03em] text-[#071126]">Organization roles</h2>
           </div>
-          <Badge tone={isAdmin ? 'brand' : 'neutral'}>{isAdmin ? 'Admin editable' : 'View only'}</Badge>
         </div>
 
         {isAdmin && (

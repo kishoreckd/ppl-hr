@@ -131,7 +131,7 @@ export function AttendanceSidebar({
         <NavSection last>
           {canAccessPage(role, 'team-attendance') && <SideItem collapsed={collapsed} icon={<ContactRound className="size-4" />} label="Team" onClick={() => navigatePage('team-attendance')} selected={false} />}
           <SideItem collapsed={collapsed} icon={<UserRoundPlus className="size-4" />} label="Recruitment" onClick={() => navigatePage('dashboard')} selected={false} />
-          {canAccessPage(role, 'team-attendance') && <SideItem collapsed={collapsed} icon={<UsersRound className="size-4" />} label="Employees" onClick={() => navigatePage('team-attendance')} selected={false} />}
+          <SideItem collapsed={collapsed} icon={<UsersRound className="size-4" />} label="Employees" onClick={() => navigatePage('employees')} selected={activePage === 'employees'} />
           <SideItem collapsed={collapsed} icon={<Mail className="size-4" />} label="Email Subscription" onClick={() => navigatePage('settings')} selected={false} />
           <SideItem collapsed={collapsed} icon={<Settings2 className="size-4" />} label="Settings" onClick={() => navigatePage('settings')} selected={activePage === 'settings'} />
         </NavSection>

@@ -11,6 +11,7 @@ export type ConsolePageType =
   | 'leave-application'
   | 'leave-admin'
   | 'leave-calendar'
+  | 'employees'
   | 'settings'
   | 'timesheet'
 
@@ -21,6 +22,7 @@ export const PAGE_TITLES: Record<ConsolePageType, string> = {
   'attendance-history': 'Attendance history',
   'attendance-info': 'Attendance info',
   dashboard: 'Dashboard',
+  employees: 'Employees',
   'leave-calendar': 'Holiday calendar',
   'leave-application': 'Leave application',
   'leave-balance': 'Employee leave balance',
@@ -38,6 +40,7 @@ export const CONSOLE_PAGE_PATHS: Record<ConsolePageType, string> = {
   'attendance-history': '/attendance/history',
   'attendance-info': '/attendance/info',
   dashboard: '/dashboard',
+  employees: '/employees',
   'leave-admin': '/leave/setup',
   'leave-application': '/leave/applications',
   'leave-balance': '/leave/balance',
@@ -94,12 +97,11 @@ export const ROLE_PAGE_RULES: Record<ConsoleRoleType, ConsolePageType[]> = {
     'attendance-history',
     'regularization',
     'timesheet',
-    'team-attendance',
-    'team-calendar',
     'leave-balance',
     'leave-application',
     'leave-calendar',
     'leave-admin',
+    'employees',
     'settings',
   ],
   Employee: [
@@ -110,6 +112,7 @@ export const ROLE_PAGE_RULES: Record<ConsoleRoleType, ConsolePageType[]> = {
     'attendance-history',
     'regularization',
     'timesheet',
+    'employees',
     'leave-balance',
     'leave-application',
     'leave-calendar',
@@ -125,6 +128,7 @@ export const ROLE_PAGE_RULES: Record<ConsoleRoleType, ConsolePageType[]> = {
     'timesheet',
     'team-attendance',
     'team-calendar',
+    'employees',
     'leave-balance',
     'leave-application',
     'leave-calendar',
@@ -150,6 +154,7 @@ export function getMobilePages(role: ConsoleRoleType): ConsolePageType[] {
     'team-attendance',
     'timesheet',
     'regularization',
+    'employees',
     'leave-balance',
     'leave-application',
     'leave-calendar',

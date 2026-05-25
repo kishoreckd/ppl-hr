@@ -10,6 +10,7 @@ import { LeaveCalendarPage } from '../../calendar'
 import {
   EmployeeAttendancePage,
   EmployeeCalendarPage,
+  EmployeeDirectoryPage,
   EmployeeHistoryPage,
 } from '../../employee'
 import { TeamAttendancePage, TeamCalendarPage } from '../../manager'
@@ -211,6 +212,10 @@ function ConsolePage({
 
   if (activePage === 'attendance-history') {
     return <EmployeeHistoryPage />
+  }
+
+  if (activePage === 'employees') {
+    return <EmployeeDirectoryPage />
   }
 
   if (activePage === 'team-attendance') {

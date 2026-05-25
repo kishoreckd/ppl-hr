@@ -110,6 +110,22 @@ export function RegularizationPage({
       }),
     [manager, managerView, query, requests, status],
   )
+  const peopleSummary = useMemo(() => {
+    const groupedByEmployee = rows.reduce<Record<string, number>>((acc, request) => {
+      acc[request.employeeName] = (acc[request.employeeName] ?? 0) + 1
+      return acc
+    }, {})
+    const maxCount = Math.max(1, ...Object.values(groupedByEmployee))
+
+    return Object.entries(groupedByEmployee)
+      .map(([name, count]) => ({
+        count,
+        name,
+        width: Math.max(16, Math.round((count / maxCount) * 100)),
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6)
+  }, [rows])
   const allRowsSelected = rows.length > 0 && rows.every((request) => selectedIds.includes(request.id))
   const selectedCount = selectedIds.length
 
@@ -211,6 +227,17 @@ export function RegularizationPage({
       header: 'From',
     }),
     column.accessor('to', { header: 'To' }),
+    column.accessor('reason', {
+      cell: (info) => (
+        <span
+          className="block max-w-56 truncate text-xs font-semibold text-[#5c6b8e]"
+          title={info.getValue()}
+        >
+          {info.getValue()}
+        </span>
+      ),
+      header: 'Notes',
+    }),
     column.accessor('status', {
       cell: (info) => <StatusBadge status={info.getValue()} />,
       header: 'Status',
@@ -292,7 +319,7 @@ export function RegularizationPage({
           </div>
 
           <div className="mt-4 overflow-x-auto rounded-lg border border-[#021333]/10">
-            <Table className="min-w-[860px] border-separate border-spacing-0">
+            <Table className="min-w-[1080px] border-separate border-spacing-0">
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow className="hover:bg-transparent" key={headerGroup.id}>
@@ -411,8 +438,32 @@ export function RegularizationPage({
           )}
         </div>
 
+        <div className="mt-3 rounded-xl border border-[#dce3f1] bg-[#fbfcff] p-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="text-xs font-black uppercase tracking-[0.08em] text-[#5c6b8e]">People bar</p>
+            <p className="text-xs font-semibold text-[#5c6b8e]">{rows.length} requests</p>
+          </div>
+          <div className="grid gap-2 md:grid-cols-2">
+            {peopleSummary.length ? (
+              peopleSummary.map((item) => (
+                <div className="rounded-lg border border-[#dce3f1] bg-white px-3 py-2" key={item.name}>
+                  <div className="mb-1 flex items-center justify-between gap-2 text-xs">
+                    <span className="truncate font-bold text-[#071126]">{item.name}</span>
+                    <span className="font-black text-[#5c6b8e]">{item.count}</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-[#e7ecf7]">
+                    <div className="h-full rounded-full bg-[#1e3fe3]" style={{ width: `${item.width}%` }} />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm font-semibold text-[#5c6b8e]">No people data for current filters.</p>
+            )}
+          </div>
+        </div>
+
         <div className="mt-4 overflow-x-auto rounded-lg border border-[#021333]/10">
-          <Table className="min-w-[860px] border-separate border-spacing-0">
+          <Table className="min-w-[1080px] border-separate border-spacing-0">
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow className="hover:bg-transparent" key={headerGroup.id}>
