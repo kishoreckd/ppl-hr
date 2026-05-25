@@ -28,6 +28,14 @@ Phase 1 narrows the product to authentication and attendance.
 - Manager dashboard shows online staff, absent staff, late marks, and its action queue; team attendance and calendar live in submenu pages.
 - Date detail panels expose check in, check out, total hours, attendance status, and late marks.
 - Leave and holiday pages allow employees to apply leave and managers to add holidays and approve requests.
+- Timesheets are available to all roles from Attendance. Employees can add, update, and delete daily, weekly, and monthly work-hour entries.
+- Managers and admins can review submitted timesheets and approve or reject entries for reporting-manager approval.
+
+## UI standards
+
+- Console pages use a breadcrumb-only header so titles are not duplicated across the workspace.
+- The product shell uses a clean light-gray HRMS workspace background instead of the previous grid pattern.
+- Page-level context belongs inside the working card or table, not as generic helper text under every route title.
 
 ## Realtime direction
 

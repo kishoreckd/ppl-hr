@@ -56,25 +56,25 @@ export function AttendanceSidebar({
 
   return (
     <motion.aside
-      animate={{ width: collapsed ? 68 : 220 }}
-      className="sticky top-0 z-30 hidden h-screen shrink-0 overflow-hidden border-r border-[#021333]/10 bg-white lg:flex lg:flex-col"
+      animate={{ width: collapsed ? 78 : 244 }}
+      className="sticky top-0 z-30 hidden h-screen shrink-0 overflow-hidden border-r border-[#dce3f1] bg-white lg:flex lg:flex-col"
       transition={{ damping: 28, stiffness: 260, type: 'spring' }}
     >
       <button
         aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        className="absolute -right-3 top-9 z-10 grid size-6 place-items-center rounded-full border border-[#021333]/10 bg-white text-[#1e3fe3] shadow-md"
+        className="absolute -right-3 top-9 z-10 grid size-7 place-items-center rounded-full border border-[#d7deec] bg-white text-[#1e3fe3] shadow-md"
         onClick={onCollapse}
         type="button"
       >
         {collapsed ? <PanelLeftOpen className="size-3.5" /> : <PanelLeftClose className="size-3.5" />}
       </button>
 
-      <div className="flex h-[4.5rem] items-center gap-2 border-b border-[#021333]/10 px-4">
-        <span className="grid size-10 shrink-0 place-items-center rounded-md bg-[#1e3fe3] font-black text-white">T</span>
+      <div className="flex h-[5rem] items-center gap-3 border-b border-[#dce3f1] px-4">
+        <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#1e3fe3] text-lg font-black text-white shadow-[0_16px_34px_rgba(30,63,227,0.18)]">T</span>
         {!collapsed && (
           <div className="min-w-0">
-            <p className="text-[11px] font-black uppercase text-[#1e3fe3]">TeamPilot</p>
-            <p className="truncate text-lg font-black text-[#021333]">Workspace</p>
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[#1e3fe3]">TeamPilot</p>
+            <p className="truncate text-xl font-black tracking-[-0.03em] text-[#071126]">Workspace</p>
           </div>
         )}
       </div>
@@ -104,6 +104,7 @@ export function AttendanceSidebar({
             <SubItem active={activePage === 'attendance-info'} label="Attendance info" onClick={() => navigatePage('attendance-info')} />
             <SubItem active={activePage === 'attendance-calendar'} label="Calendar" onClick={() => navigatePage('attendance-calendar')} />
             <SubItem active={activePage === 'attendance-history'} label="History" onClick={() => navigatePage('attendance-history')} />
+            <SubItem active={activePage === 'timesheet'} label="Timesheet" onClick={() => navigatePage('timesheet')} />
             <SubItem active={activePage === 'regularization'} label="Regularizations" onClick={() => navigatePage('regularization')} />
             {canAccessPage(role, 'team-attendance') && (
               <>
@@ -131,13 +132,13 @@ export function AttendanceSidebar({
           {canAccessPage(role, 'team-attendance') && <SideItem collapsed={collapsed} icon={<ContactRound className="size-4" />} label="Team" onClick={() => navigatePage('team-attendance')} selected={false} />}
           <SideItem collapsed={collapsed} icon={<UserRoundPlus className="size-4" />} label="Recruitment" onClick={() => navigatePage('dashboard')} selected={false} />
           {canAccessPage(role, 'team-attendance') && <SideItem collapsed={collapsed} icon={<UsersRound className="size-4" />} label="Employees" onClick={() => navigatePage('team-attendance')} selected={false} />}
-          <SideItem collapsed={collapsed} icon={<Mail className="size-4" />} label="Email Subscription" onClick={() => navigatePage('dashboard')} selected={false} />
-          <SideItem collapsed={collapsed} icon={<Settings2 className="size-4" />} label="Settings" onClick={() => undefined} selected={false} />
+          <SideItem collapsed={collapsed} icon={<Mail className="size-4" />} label="Email Subscription" onClick={() => navigatePage('settings')} selected={false} />
+          <SideItem collapsed={collapsed} icon={<Settings2 className="size-4" />} label="Settings" onClick={() => navigatePage('settings')} selected={activePage === 'settings'} />
         </NavSection>
       </nav>
 
       {!collapsed && (
-        <div className="mt-auto border-t border-[#021333]/10 p-3">
+        <div className="mt-auto border-t border-[#dce3f1] p-4">
           <Badge tone="brand">{role}</Badge>
         </div>
       )}
@@ -146,7 +147,7 @@ export function AttendanceSidebar({
 }
 
 function NavSection({ children, last = false }: { children: ReactNode; last?: boolean }) {
-  return <div className={`space-y-1 px-3 py-3 ${last ? '' : 'border-b border-[#021333]/10'}`}>{children}</div>
+  return <div className={`space-y-1.5 px-3 py-4 ${last ? '' : 'border-b border-[#dce3f1]'}`}>{children}</div>
 }
 
 function MenuGroup({
@@ -167,8 +168,8 @@ function MenuGroup({
   return (
     <div>
       <button
-        className={`flex h-9 w-full items-center gap-3 rounded-md px-2 text-left text-sm font-semibold transition ${
-          open ? 'text-[#021333]' : 'text-[#5c6b8e] hover:bg-[#f6f8ff] hover:text-[#021333]'
+        className={`flex h-11 w-full items-center gap-3 rounded-2xl px-3 text-left text-sm font-extrabold transition ${
+          open ? 'bg-[#eef3ff] text-[#1e3fe3]' : 'text-[#5c6b8e] hover:bg-[#f6f8ff] hover:text-[#1e3fe3]'
         }`}
         onClick={onToggle}
         title={label}
@@ -185,7 +186,7 @@ function MenuGroup({
       {!collapsed && open && (
         <motion.div
           animate={{ height: 'auto', opacity: 1 }}
-          className="ml-4 overflow-hidden border-l border-[#1e3fe3] py-1 pl-3"
+          className="ml-5 overflow-hidden border-l border-[#1e3fe3]/30 py-2 pl-3"
           exit={{ height: 0, opacity: 0 }}
           initial={{ height: 0, opacity: 0 }}
           transition={{ duration: 0.18, ease: 'easeOut' }}
@@ -212,8 +213,8 @@ function SideItem({
 }) {
   return (
     <button
-      className={`flex h-9 w-full items-center gap-3 rounded-md px-2 text-left text-sm font-medium transition ${
-        selected ? 'bg-[#021333]/8 text-[#021333]' : 'text-[#5c6b8e] hover:bg-[#f6f8ff] hover:text-[#021333]'
+      className={`flex h-11 w-full items-center gap-3 rounded-2xl px-3 text-left text-sm font-extrabold transition ${
+        selected ? 'bg-[#eef3ff] text-[#1e3fe3]' : 'text-[#5c6b8e] hover:bg-[#f6f8ff] hover:text-[#1e3fe3]'
       }`}
       onClick={onClick}
       title={label}
@@ -228,8 +229,8 @@ function SideItem({
 function SubItem({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
   return (
     <button
-      className={`block min-h-8 w-full truncate rounded px-2 text-left text-sm font-semibold transition ${
-        active ? 'text-[#1e3fe3]' : 'text-[#5c6b8e] hover:text-[#021333]'
+      className={`block min-h-9 w-full truncate rounded-xl px-3 text-left text-sm font-extrabold transition ${
+        active ? 'bg-[#eef3ff] text-[#1e3fe3]' : 'text-[#5c6b8e] hover:bg-[#f6f8ff] hover:text-[#1e3fe3]'
       }`}
       onClick={onClick}
       type="button"
@@ -245,6 +246,7 @@ function isAttendancePage(page: ConsolePageType) {
     'attendance-calendar',
     'attendance-history',
     'regularization',
+    'timesheet',
     'team-attendance',
     'team-calendar',
   ].includes(page)

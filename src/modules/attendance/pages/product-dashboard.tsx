@@ -199,9 +199,11 @@ function ActionQueue({
         { action: () => onPage('regularization'), label: 'Attendance corrections', value: `${pending} pending` },
         { action: () => onPage('team-attendance'), label: 'Late login review', value: `${late} cases` },
         { action: () => onPage('leave-application'), label: 'Leave requests', value: isAdmin ? 'HR override enabled' : 'Manager queue' },
+        { action: () => onPage('timesheet'), label: 'Timesheet review', value: 'Daily, weekly, monthly' },
       ]
     : [
         { action: () => onPage('regularization'), label: 'Regularization', value: 'Create request' },
+        { action: () => onPage('timesheet'), label: 'Timesheet', value: 'Add work hours' },
         { action: () => onPage('leave-balance'), label: 'Leave balance', value: 'View and apply' },
         { action: () => onPage('attendance-calendar'), label: 'Monthly calendar', value: 'Check status' },
       ]

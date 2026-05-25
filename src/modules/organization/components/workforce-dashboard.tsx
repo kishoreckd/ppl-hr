@@ -36,7 +36,7 @@ export function WorkforceDashboard({ workspace }: IWorkforceDashboardProps) {
   const { company, role, setRole } = useOrganizationStore()
 
   return (
-    <div className="teampilot-grid flex min-h-screen bg-[#f4f7ff]">
+    <div className="teampilot-grid flex min-h-screen bg-[#f2f3f5]">
       <ProductSidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((value) => !value)} />
       <div className="min-w-0 flex-1">
         <header className="sticky top-0 z-10 border-b border-[#021333]/10 bg-white/90 px-4 py-3 backdrop-blur sm:px-6">

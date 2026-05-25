@@ -113,38 +113,38 @@ export function PreLoginSetupPage({ onComplete }: IPreLoginSetupPageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-white text-[#071126]">
-      <div className="grid min-h-screen lg:grid-cols-[0.54fr_0.46fr]">
-        <section className="flex min-h-screen flex-col px-6 py-7 sm:px-10 lg:px-16">
+    <main className="h-screen overflow-hidden bg-white text-[#071126]">
+      <div className="grid h-full lg:grid-cols-[0.54fr_0.46fr]">
+        <section className="flex h-full min-h-0 flex-col px-6 py-4 sm:px-10 lg:px-14">
           <div className="flex items-center gap-3">
-            <span className="grid size-12 place-items-center rounded-2xl bg-[#1e3fe3] text-xl font-black text-white shadow-[0_18px_40px_rgba(30,63,227,0.24)]">
+            <span className="grid size-11 place-items-center rounded-2xl bg-[#1e3fe3] text-lg font-black text-white shadow-[0_18px_40px_rgba(30,63,227,0.24)]">
               T
             </span>
             <div>
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[#1e3fe3]">TeamPilot</p>
-              <p className="text-2xl font-black tracking-tight text-[#071126]">Workspace</p>
+              <p className="text-xl font-black tracking-tight text-[#071126]">Workspace</p>
             </div>
           </div>
 
-          <div className="my-auto w-full max-w-2xl py-10">
+          <div className="my-auto w-full max-w-2xl py-4">
             <SegmentedPills
-              className="mb-8"
+              className="mb-5"
               items={SETUP_STEP_PILLS}
               onValueChange={(value) => setStep(Number(value))}
               value={String(step)}
             />
 
             <motion.div animate={{ opacity: 1, y: 0 }} initial={{ opacity: 0, y: 10 }} key={step} transition={{ duration: 0.24 }}>
-              <span className="grid size-14 place-items-center rounded-2xl bg-[#eaf0ff] text-[#1e3fe3]">
-                <StepIcon className="size-7" />
+              <span className="grid size-12 place-items-center rounded-2xl bg-[#eaf0ff] text-[#1e3fe3]">
+                <StepIcon className="size-6" />
               </span>
-              <p className="mt-6 text-sm font-black uppercase tracking-[0.16em] text-[#65708a]">{SETUP_STEPS[step].eyebrow}</p>
-              <h1 className="mt-2 max-w-xl text-4xl font-black leading-tight tracking-tight text-[#071126] sm:text-5xl">
+              <p className="mt-4 text-xs font-black uppercase tracking-[0.16em] text-[#65708a]">{SETUP_STEPS[step].eyebrow}</p>
+              <h1 className="mt-1 max-w-xl text-4xl font-black leading-tight tracking-tight text-[#071126]">
                 {SETUP_STEPS[step].title}
               </h1>
-              <p className="mt-4 max-w-xl text-lg font-medium leading-8 text-[#65708a]">{SETUP_STEPS[step].helper}</p>
+              <p className="mt-3 max-w-xl text-base font-medium leading-7 text-[#65708a]">{SETUP_STEPS[step].helper}</p>
 
-              <form className="mt-9 grid gap-5 sm:grid-cols-2" onSubmit={(event) => event.preventDefault()}>
+              <form className="mt-6 grid gap-4 sm:grid-cols-2" onSubmit={(event) => event.preventDefault()}>
                 {step === 0 && (
                   <>
                     <SetupField error={form.formState.errors.firstName?.message} label="First name" registration={form.register('firstName')} />
@@ -224,7 +224,7 @@ export function PreLoginSetupPage({ onComplete }: IPreLoginSetupPageProps) {
                   </div>
                 )}
 
-                <div className="mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-[#e6ebf4] pt-6 sm:col-span-2">
+                <div className="mt-1 flex flex-wrap items-center justify-between gap-3 border-t border-[#e6ebf4] pt-4 sm:col-span-2">
                   <p className="text-sm font-extrabold text-[#65708a]">Step {step + 1} of 3</p>
                   <div className="flex items-center gap-3">
                     {step > 0 && (
@@ -252,24 +252,24 @@ export function PreLoginSetupPage({ onComplete }: IPreLoginSetupPageProps) {
 
 function SetupIllustration({ step }: { step: number }) {
   return (
-    <aside className="relative hidden min-h-screen overflow-hidden bg-[#a9daf8] lg:block">
-      <div className="absolute inset-x-0 top-0 h-24 bg-white/20" />
-      <div className="absolute right-16 top-20 rounded-full bg-white px-5 py-2 text-sm font-black text-[#071126] shadow-sm">
+    <aside className="relative hidden h-full min-h-0 overflow-hidden bg-[#a9daf8] lg:block">
+      <div className="absolute inset-x-0 top-0 h-20 bg-white/20" />
+      <div className="absolute right-14 top-16 rounded-full bg-white px-5 py-2 text-sm font-black text-[#071126] shadow-sm">
         {step === 0 ? 'Welcome aboard' : step === 1 ? 'Build your company space' : 'Secure admin access'}
       </div>
-      <div className="absolute right-24 top-44 size-20 rounded-full bg-[#fff51f] shadow-[0_0_0_20px_rgba(255,245,31,0.18)]" />
-      <Cloud className="left-24 top-36" />
-      <Cloud className="right-28 top-64 scale-75" />
-      <Cloud className="left-44 top-80 scale-90" />
-      <div className="absolute bottom-24 left-20 right-20 h-2 rounded-full bg-white/70" />
-      <div className="absolute bottom-28 left-28 flex items-end gap-3">
-        <Building className="h-72 w-32 bg-[#2d8cff]" windows="bg-[#155eef]" />
-        <Building className="h-96 w-36 bg-[#364958]" windows="bg-[#182631]" />
-        <Building className="h-80 w-52 bg-[#1e3fe3]" windows="bg-[#8fb3ff]" />
-        <Building className="h-64 w-28 bg-[#3e5562]" windows="bg-[#1f303a]" />
+      <div className="absolute right-24 top-36 size-20 rounded-full bg-[#fff51f] shadow-[0_0_0_20px_rgba(255,245,31,0.18)]" />
+      <Cloud className="left-24 top-32" />
+      <Cloud className="right-28 top-56 scale-75" />
+      <Cloud className="left-44 top-72 scale-90" />
+      <div className="absolute bottom-10 left-20 right-20 h-2 rounded-full bg-white/70" />
+      <div className="absolute bottom-14 left-24 flex items-end gap-3">
+        <Building className="h-60 w-28 bg-[#2d8cff]" windows="bg-[#155eef]" />
+        <Building className="h-80 w-32 bg-[#364958]" windows="bg-[#182631]" />
+        <Building className="h-68 w-48 bg-[#1e3fe3]" windows="bg-[#8fb3ff]" />
+        <Building className="h-56 w-24 bg-[#3e5562]" windows="bg-[#1f303a]" />
       </div>
-      <div className="absolute bottom-20 left-24 h-12 w-28 rounded-t-full bg-[#3e5562]" />
-      <div className="absolute bottom-20 right-28 h-14 w-32 rounded-t-full bg-[#3e5562]" />
+      <div className="absolute bottom-8 left-24 h-12 w-28 rounded-t-full bg-[#3e5562]" />
+      <div className="absolute bottom-8 right-28 h-14 w-32 rounded-t-full bg-[#3e5562]" />
     </aside>
   )
 }
@@ -320,7 +320,7 @@ function SetupField({
         {icon && <span className="pointer-events-none absolute left-4 top-4 text-[#65708a]">{icon}</span>}
         <Input
           aria-invalid={Boolean(error)}
-          className={`h-14 rounded-xl border-[#cfd6e4] bg-white text-lg shadow-none placeholder:text-[#65708a]/75 focus-visible:border-[#1e3fe3] focus-visible:ring-[#1e3fe3]/15 ${icon ? 'pl-12' : ''}`}
+          className={`h-13 rounded-xl border-[#cfd6e4] bg-white text-base shadow-none placeholder:text-[#65708a]/75 focus-visible:border-[#1e3fe3] focus-visible:ring-[#1e3fe3]/15 ${icon ? 'pl-12' : ''}`}
           placeholder={placeholder}
           type={type}
           {...registration}

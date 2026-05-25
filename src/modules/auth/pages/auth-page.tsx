@@ -12,7 +12,7 @@ interface IAuthPageProps {
 
 export function AuthPage({ mode, setMode }: IAuthPageProps) {
   return (
-    <main className="teampilot-grid grid min-h-screen items-center bg-[#f4f7ff] p-4 lg:grid-cols-[1.05fr_0.95fr] lg:p-8">
+    <main className="teampilot-grid grid min-h-screen items-center bg-[#f2f3f5] p-4 lg:grid-cols-[1.05fr_0.95fr] lg:p-8">
       <motion.section
         animate={{ opacity: 1, y: 0 }}
         className="p-4 sm:p-8"

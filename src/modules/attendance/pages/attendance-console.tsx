@@ -3,7 +3,6 @@ import { Bell, CircleUserRound, LogOut, Menu, MoonStar, Search, SunMedium } from
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { Button } from '../../../shared/components/ui/button'
-import { Breadcrumb } from '../../../shared/components/ui/breadcrumb'
 import { Input } from '../../../shared/components/ui/input'
 import { useUiStore } from '../../../shared/store/use-ui-store'
 import { useAuthStore } from '../../auth/store/use-auth-store'
@@ -15,11 +14,14 @@ import {
 } from '../../employee'
 import { TeamAttendancePage, TeamCalendarPage } from '../../manager'
 import { ProfilePage } from '../../profile'
+import { SettingsPage } from '../../settings'
+import { TimesheetPage } from '../../timesheet'
 import { AttendanceSidebar } from '../components/attendance-sidebar'
+import { ConsolePageHeader } from '../components/console-page-header'
 import { AttendancePunchAction } from '../components/attendance-punch-action'
 import { RegularizationPage } from './regularization-page'
 import { ProductDashboard } from './product-dashboard'
-import { canAccessPage, getMobilePages, getPageBreadcrumb, PAGE_TITLES, type ConsolePageType } from '../types/console-types'
+import { canAccessPage, getMobilePages, PAGE_TITLES, type ConsolePageType } from '../types/console-types'
 
 interface IAttendanceConsoleProps {
   activePage: ConsolePageType
@@ -54,7 +56,7 @@ export function AttendanceConsole({ activePage, onLogout, onPage }: IAttendanceC
         role={role}
       />
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-20 border-b border-[#021333]/10 bg-white/90 px-4 py-2 backdrop-blur sm:px-5">
+        <header className="sticky top-0 z-20 border-b border-[#dce3f1] bg-white/92 px-4 py-3 backdrop-blur sm:px-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <Button className="lg:hidden" onClick={() => setMobileMenu((value) => !value)} variant="outline">
@@ -64,7 +66,7 @@ export function AttendanceConsole({ activePage, onLogout, onPage }: IAttendanceC
                 <Search className="pointer-events-none absolute left-3 top-3 size-4 text-[#5c6b8e]" />
                 <Input
                   aria-label="Search"
-                  className="h-9 rounded-full pl-9"
+                  className="h-12 rounded-full pl-10 text-base"
                   placeholder="Search"
                 />
               </label>
@@ -90,7 +92,7 @@ export function AttendanceConsole({ activePage, onLogout, onPage }: IAttendanceC
               </span>
               <button
                 aria-label="Open profile"
-                className="grid size-9 place-items-center rounded-full bg-[#eaf0ff] text-[#1e3fe3] transition hover:ring-2 hover:ring-[#1e3fe3]/20"
+                className="grid size-11 place-items-center rounded-full bg-[#eaf0ff] text-[#1e3fe3] transition hover:ring-2 hover:ring-[#1e3fe3]/20"
                 onClick={() => onPage('profile')}
                 type="button"
               >
@@ -129,12 +131,8 @@ export function AttendanceConsole({ activePage, onLogout, onPage }: IAttendanceC
             </div>
           )}
         </header>
-        <main className="p-3 sm:p-4">
-          <Breadcrumb className="mb-3" items={getPageBreadcrumb(activePage).map((label) => ({ label }))} onHome={() => onPage('dashboard')} />
-          <div className="mb-3">
-            <h1 className="text-xl font-black text-[#021333]">{getConsoleTitle(activePage)}</h1>
-            <p className="text-sm font-semibold text-[#5c6b8e]">{getConsoleSubtitle(activePage, role)}</p>
-          </div>
+        <main className="p-4 sm:p-6">
+          <ConsolePageHeader activePage={activePage} onHome={() => onPage('dashboard')} />
           <AnimatePresence mode="wait">
             <motion.div
               animate={{ opacity: 1, y: 0 }}
@@ -173,6 +171,14 @@ function ConsolePage({
 }) {
   if (activePage === 'profile') {
     return <ProfilePage user={user} />
+  }
+
+  if (activePage === 'settings') {
+    return <SettingsPage role={role} />
+  }
+
+  if (activePage === 'timesheet') {
+    return <TimesheetPage employeeName={name} role={role} />
   }
 
   if (activePage === 'leave-calendar') {
@@ -216,28 +222,4 @@ function ConsolePage({
   }
 
   return <ProductDashboard onPage={onPage} role={role} />
-}
-
-function getConsoleTitle(page: ConsolePageType) {
-  return PAGE_TITLES[page]
-}
-
-function getConsoleSubtitle(page: ConsolePageType, role: 'Employee' | 'Manager' | 'Admin') {
-  if (page === 'dashboard') {
-    return role === 'Employee' ? 'Today overview' : 'Team operations overview'
-  }
-
-  if (page.startsWith('leave')) {
-    return 'Manage leave balances, applications, holidays, and policy setup.'
-  }
-
-  if (page === 'regularization') {
-    return 'Create, review, and approve attendance correction requests.'
-  }
-
-  if (page.startsWith('attendance')) {
-    return 'Review attendance, swipes, calendar status, and work-hour history.'
-  }
-
-  return 'Keep employee and workforce information organized.'
 }

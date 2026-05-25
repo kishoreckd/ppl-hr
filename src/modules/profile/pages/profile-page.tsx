@@ -54,7 +54,7 @@ export function ProfilePage({ user }: { user: IAuthUser }) {
   return (
     <div className="space-y-4">
       <Card className="overflow-hidden">
-        <div className="h-28 bg-[linear-gradient(135deg,#235e65,#1e3fe3_48%,#35b86b)]" />
+        <div className="h-28 bg-[linear-gradient(135deg,#071126,#1e3fe3_58%,#8fb3ff)]" />
         <div className="grid gap-4 p-4 lg:grid-cols-[1.35fr_0.65fr]">
           <div className="flex flex-col gap-4 sm:flex-row">
             <div className="-mt-14 grid size-24 shrink-0 place-items-center rounded-full border-4 border-white bg-[#eaf0ff] text-2xl font-black text-[#1e3fe3] shadow-xl">
@@ -93,10 +93,10 @@ export function ProfilePage({ user }: { user: IAuthUser }) {
                 <p className="text-[11px] font-black uppercase text-[#5c6b8e]">Profile completion</p>
                 <p className="text-2xl font-black text-[#021333]">{profile.profileCompleteness}%</p>
               </div>
-              <Sparkles className="size-8 text-[#35b86b]" />
+              <Sparkles className="size-8 text-[#1e3fe3]" />
             </div>
             <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#eaf0ff]">
-              <div className="h-full rounded-full bg-[#35b86b]" style={{ width: `${profile.profileCompleteness}%` }} />
+              <div className="h-full rounded-full bg-[#1e3fe3]" style={{ width: `${profile.profileCompleteness}%` }} />
             </div>
             <p className="mt-3 text-xs font-semibold text-[#5c6b8e]">{profile.managerNote}</p>
           </div>
@@ -223,7 +223,7 @@ function ProfileInterestsForm({ profile }: { profile: IEmployeeProfile }) {
     <ProfileSectionCard eyebrow="People profile" title="Bio and interests">
       <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
         <div className="rounded-lg border border-[#021333]/10 bg-[#fbfbfd] p-4">
-          <HeartHandshake className="mb-3 size-7 text-[#35b86b]" />
+          <HeartHandshake className="mb-3 size-7 text-[#1e3fe3]" />
           <p className="text-sm font-semibold text-[#5c6b8e]">
             Add interests as comma-separated values. These stay employee-owned and editable.
           </p>

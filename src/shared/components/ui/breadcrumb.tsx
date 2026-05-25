@@ -15,10 +15,10 @@ export function Breadcrumb({
   onHome?: () => void
 }) {
   return (
-    <nav aria-label="Breadcrumb" className={cn('flex items-center gap-2 text-sm font-semibold text-[#5c6b8e]', className)}>
+    <nav aria-label="Breadcrumb" className={cn('flex items-center gap-2 text-sm font-extrabold text-[#5c6b8e]', className)}>
       <button
         aria-label="Go to dashboard"
-        className="grid size-6 place-items-center rounded text-[#2dbb45] transition hover:bg-[#eaf0ff]"
+        className="grid size-8 place-items-center rounded-xl text-[#1e3fe3] transition hover:bg-[#eaf0ff]"
         onClick={onHome}
         type="button"
       >
