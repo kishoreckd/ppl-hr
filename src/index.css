@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
 :root {
@@ -12,7 +13,7 @@
   --success: #12734a;
   color: var(--ink);
   background: #f4f7ff;
-  font-family: Inter, Outfit, "Segoe UI", system-ui, sans-serif;
+  font-family: Manrope, Inter, "Segoe UI", system-ui, sans-serif;
   font-synthesis: none;
   letter-spacing: 0;
   text-rendering: optimizeLegibility;

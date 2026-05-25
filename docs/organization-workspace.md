@@ -2,6 +2,18 @@
 
 The first TeamPilot product surface establishes a company hierarchy before HR workflows are activated.
 
+## Setup entry
+
+The workspace setup surface lives at `/setup` and is completed before `/login`.
+
+Setup is intentionally split into three focused steps:
+
+- Founder contact captures the initial workspace owner.
+- Company identity captures company website, name, and domain.
+- Admin employee access captures one or more admin employees through repeatable name and email rows.
+
+This keeps company creation separate from authentication while still preparing the admin ownership model for later employee, policy, and hierarchy configuration.
+
 ## Hierarchy rules
 
 - A company head is the root escalation owner until managers and HRBPs are assigned.

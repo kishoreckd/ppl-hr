@@ -224,9 +224,7 @@ function getConsoleTitle(page: ConsolePageType) {
 
 function getConsoleSubtitle(page: ConsolePageType, role: 'Employee' | 'Manager' | 'Admin') {
   if (page === 'dashboard') {
-    return role === 'Employee'
-      ? 'Track check-ins, leave, history, and requests from one workspace.'
-      : 'Track team attendance, exceptions, leave, and approvals from one workspace.'
+    return role === 'Employee' ? 'Today overview' : 'Team operations overview'
   }
 
   if (page.startsWith('leave')) {

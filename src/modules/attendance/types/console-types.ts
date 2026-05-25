@@ -30,18 +30,18 @@ export const PAGE_TITLES: Record<ConsolePageType, string> = {
 }
 
 export const CONSOLE_PAGE_PATHS: Record<ConsolePageType, string> = {
-  'attendance-calendar': '/attendance-calendar',
-  'attendance-history': '/attendance-history',
-  'attendance-info': '/attendance-info',
+  'attendance-calendar': '/attendance/calendar',
+  'attendance-history': '/attendance/history',
+  'attendance-info': '/attendance/info',
   dashboard: '/dashboard',
-  'leave-admin': '/leave-admin',
-  'leave-application': '/leave-application',
-  'leave-balance': '/leave-balance',
-  'leave-calendar': '/leave-calendar',
+  'leave-admin': '/leave/setup',
+  'leave-application': '/leave/applications',
+  'leave-balance': '/leave/balance',
+  'leave-calendar': '/leave/holiday-calendar',
   profile: '/profile',
-  regularization: '/regularization',
-  'team-attendance': '/team-attendance',
-  'team-calendar': '/team-calendar',
+  regularization: '/attendance/regularizations',
+  'team-attendance': '/team/attendance',
+  'team-calendar': '/team/calendar',
 }
 
 export function getConsolePageFromPath(pathname: string): ConsolePageType | null {

@@ -2,6 +2,29 @@
 
 This document explains the login paths available in the current TeamPilot Phase 1 build.
 
+## Pre-login Workspace Setup
+
+Before login, new workspaces start at `/setup`.
+
+The setup flow is split into three screens:
+
+1. Founder contact
+   - First name
+   - Last name
+   - Work email
+
+2. Company identity
+   - Company website
+   - Company name
+   - Company domain
+
+3. Admin employee access
+   - Admin name
+   - Admin email
+   - Add email button for multiple admin employees
+
+After setup is saved, TeamPilot redirects to `/login`.
+
 ## User Login
 
 Employees and managers can sign in with a work email and password from the login screen.

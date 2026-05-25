@@ -70,12 +70,9 @@ export function ProductDashboard({ onPage, role }: IProductDashboardProps) {
             <div>
               <div className="flex items-center gap-2">
                 <Badge tone={isAdmin ? 'brand' : canViewTeam ? 'warning' : 'success'}>{role}</Badge>
-                <span className="text-xs font-black uppercase text-[#5c6b8e]">Product workspace</span>
+                <span className="text-xs font-black uppercase text-[#5c6b8e]">Today</span>
               </div>
-              <h2 className="mt-3 text-2xl font-black text-[#021333]">Attendance, leave, and approvals in one place</h2>
-              <p className="mt-2 max-w-xl text-sm font-semibold leading-6 text-[#5c6b8e]">
-                The same workspace adapts to your access. Employee self-service stays visible, while team and policy actions appear only when your role allows them.
-              </p>
+              <h2 className="mt-3 text-2xl font-black text-[#021333]">{canViewTeam ? 'Team operations' : 'My workday'}</h2>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Button onClick={() => onPage(canViewTeam ? 'team-attendance' : 'attendance-info')}>
                   <UsersRound className="size-4" />
