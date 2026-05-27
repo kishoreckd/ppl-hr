@@ -1,6 +1,6 @@
-# TeamPilot Authentication Access
+# PPL-HR Authentication Access
 
-This document explains the login paths available in the current TeamPilot Phase 1 build.
+This document explains the login paths available in the current PPL-HR Phase 1 build.
 
 ## Pre-login Workspace Setup
 
@@ -23,7 +23,7 @@ The setup flow is split into three screens:
    - Admin email
    - Add email button for multiple admin employees
 
-After setup is saved, TeamPilot redirects to `/login`.
+After setup is saved, PPL-HR redirects to `/login`.
 
 ## User Login
 
@@ -41,7 +41,7 @@ Role detection currently follows the email address:
 - Emails containing `manager` sign in as Manager.
 - Standard work emails sign in as Employee.
 
-After successful login, the session is persisted locally and the user is taken to the TeamPilot workspace.
+After successful login, the session is persisted locally and the user is taken to the PPL-HR workspace.
 
 ## Admin Login
 

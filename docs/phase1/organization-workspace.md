@@ -1,6 +1,6 @@
 # Organization workspace
 
-The first TeamPilot product surface establishes a company hierarchy before HR workflows are activated.
+The first PPL-HR product surface establishes a company hierarchy before HR workflows are activated.
 
 ## Setup entry
 
