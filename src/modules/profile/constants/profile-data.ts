@@ -6,19 +6,25 @@ export function buildProfile(user: IAuthUser): IEmployeeProfile {
   const designation = user.role === 'Admin' ? 'HRMS Administrator' : user.role === 'Manager' ? 'Engineering Manager' : 'Product Engineer'
 
   return {
-    about: '',
+    about:
+      user.role === 'Employee'
+        ? 'Owns attendance hygiene, request quality, and consistent delivery across TeamPilot workflows.'
+        : 'Drives execution quality, approvals, and cross-team coordination for attendance and leave operations.',
     activities: [
       { label: 'Attendance status', value: 'Present today' },
       { label: 'Last check in', value: '09:22 AM' },
       { label: 'Weekly hours', value: '38h 20m' },
       { label: 'Pending approvals', value: user.role === 'Employee' ? '1 request' : '6 requests' },
     ],
-    bio: '',
+    bio:
+      user.role === 'Employee'
+        ? 'Product-focused engineer with a strong bias for clarity, ownership, and predictable execution.'
+        : 'Operations-focused leader improving team quality, approval SLAs, and workforce reliability.',
     contact: {
-      address: '',
+      address: 'Chennai, Tamil Nadu, India',
       email: user.email,
-      phone: '',
-      workLocation: '',
+      phone: '+91 98765 43210',
+      workLocation: user.role === 'Admin' ? 'HQ - Hybrid' : 'Chennai Office - Hybrid',
     },
     documents:
       user.role === 'Employee'
@@ -46,12 +52,16 @@ export function buildProfile(user: IAuthUser): IEmployeeProfile {
       manager,
       shift: 'General Shift (US)',
     },
-    interests: [],
+    interests: [
+      { label: 'People analytics', tone: 'brand' },
+      { label: 'Workflow automation', tone: 'success' },
+      { label: 'OKR alignment', tone: 'warning' },
+    ],
     managerNote:
       user.role === 'Employee'
-        ? 'Add bio, contact, and interests to complete the employee profile.'
-        : 'Review team attendance exceptions before weekly workforce planning.',
-    profileCompleteness: user.role === 'Employee' ? 28 : 72,
+        ? 'Keep profile details current for smoother approvals and manager visibility.'
+        : 'Use this profile view to keep role, reporting, and collaboration metadata up to date.',
+    profileCompleteness: user.role === 'Employee' ? 82 : 90,
     user,
   }
 }
