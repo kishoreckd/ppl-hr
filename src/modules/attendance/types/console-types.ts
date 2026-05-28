@@ -112,7 +112,6 @@ export const ROLE_PAGE_RULES: Record<ConsoleRoleType, ConsolePageType[]> = {
     'attendance-history',
     'regularization',
     'timesheet',
-    'employees',
     'leave-balance',
     'leave-application',
     'leave-calendar',

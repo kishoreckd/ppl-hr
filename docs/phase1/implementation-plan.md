@@ -1,6 +1,6 @@
 # PPL-HR Phase 1 Implementation Plan
 
-Last updated: 2026-05-27
+Last updated: 2026-05-28
 
 ## Phase objective
 
@@ -80,3 +80,4 @@ Establish product foundation, workspace onboarding, authentication, and core att
 ## Reference docs
 
 - [Phase 1 UI Guidelines](./ui-guidelines.md)
+- [Phase 1 Completion Audit](./completion-audit.md)

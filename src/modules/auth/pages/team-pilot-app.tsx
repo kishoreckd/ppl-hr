@@ -16,10 +16,16 @@ const AUTH_MODE_PATHS: Record<AuthModeType, string> = {
   reset: '/reset-password',
   signup: '/signup',
 }
+const SETUP_STEP_PATHS = ['/setup/owner-profile', '/setup/company-identity', '/setup/admin-access'] as const
 
 function getAuthModeFromPath(pathname: string): AuthModeType {
   const match = Object.entries(AUTH_MODE_PATHS).find(([, path]) => path === pathname)
   return match ? (match[0] as AuthModeType) : 'login'
+}
+
+function getSetupStepFromPath(pathname: string): number {
+  const index = SETUP_STEP_PATHS.findIndex((path) => path === pathname)
+  return index >= 0 ? index : 0
 }
 
 function navigateTo(path: string, replace = false) {
@@ -43,8 +49,9 @@ export function TeamPilotApp() {
   useEffect(() => {
     const isConsoleRoute = Boolean(getConsolePageFromPath(pathname))
     const isAuthRoute = Object.values(AUTH_MODE_PATHS).includes(pathname)
+    const isSetupRoute = pathname === '/setup' || SETUP_STEP_PATHS.includes(pathname as (typeof SETUP_STEP_PATHS)[number])
 
-    if (session && (isAuthRoute || pathname === '/' || pathname === '/setup')) {
+    if (session && (isAuthRoute || pathname === '/' || isSetupRoute)) {
       navigateTo('/dashboard', true)
       return
     }
@@ -54,13 +61,24 @@ export function TeamPilotApp() {
       return
     }
 
+    if (pathname === '/setup') {
+      navigateTo('/setup/owner-profile', true)
+      return
+    }
+
     if (pathname === '/') {
       navigateTo(session ? '/dashboard' : '/setup', true)
     }
   }, [pathname, session])
 
-  if (!session && pathname === '/setup') {
-    return <PreLoginSetupPage onComplete={() => navigateTo('/login')} />
+  if (!session && (pathname === '/setup' || SETUP_STEP_PATHS.includes(pathname as (typeof SETUP_STEP_PATHS)[number]))) {
+    return (
+      <PreLoginSetupPage
+        onComplete={() => navigateTo('/login')}
+        onStepChange={(step) => navigateTo(SETUP_STEP_PATHS[step])}
+        step={getSetupStepFromPath(pathname)}
+      />
+    )
   }
 
   if (!session) {

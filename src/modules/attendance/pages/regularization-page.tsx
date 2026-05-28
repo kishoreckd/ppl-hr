@@ -49,6 +49,7 @@ import {
   TableHeader,
   TableRow,
 } from '../../../shared/components/ui/table'
+import { Textarea } from '../../../shared/components/ui/textarea'
 import { cn } from '../../../shared/lib/utils'
 import type { IAuthUser } from '../../auth/types/auth-types'
 import { REGULARIZATION_REQUESTS } from '../constants/regularization-data'
@@ -687,11 +688,7 @@ function CreateRegularizationPage({
             <Input aria-invalid={Boolean(form.formState.errors.emergencyContact)} {...form.register('emergencyContact')} placeholder="Emergency contact" />
           </FieldError>
           <FieldError error={form.formState.errors.reason?.message} label="Reason">
-            <textarea
-              className="min-h-24 w-full rounded-md border border-[#021333]/15 bg-white px-3 py-2 text-sm text-[#021333] outline-none transition focus:border-[#1e3fe3] focus:ring-2 focus:ring-[#1e3fe3]/15"
-              {...form.register('reason')}
-              placeholder="Add reason..."
-            />
+            <Textarea {...form.register('reason')} placeholder="Add reason..." />
           </FieldError>
           <div className="flex justify-end gap-2">
             <Button onClick={onCancel} type="button" variant="outline">
@@ -753,8 +750,8 @@ function ApprovalDialog({
           <p className="text-xs font-semibold text-[#5c6b8e]">
             This action will update {selectedCount} selected regularization request{selectedCount === 1 ? '' : 's'}.
           </p>
-          <textarea
-            className="min-h-32 w-full rounded-md border border-[#021333]/15 bg-white px-3 py-2 text-sm text-[#021333] outline-none transition focus:border-[#1e3fe3] focus:ring-2 focus:ring-[#1e3fe3]/15"
+          <Textarea
+            className="min-h-32"
             onChange={(event) => setNote(event.target.value)}
             placeholder="Type manager note..."
             value={note}

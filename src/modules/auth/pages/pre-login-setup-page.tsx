@@ -14,6 +14,8 @@ import { companySchema, type CompanySchemaType } from '../../organization/valida
 
 interface IPreLoginSetupPageProps {
   onComplete: () => void
+  onStepChange: (step: number) => void
+  step: number
 }
 
 const SETUP_STEPS = [
@@ -41,11 +43,11 @@ const SETUP_STEP_PILLS = SETUP_STEPS.map((item, index) => ({
   value: String(index),
 }))
 
-export function PreLoginSetupPage({ onComplete }: IPreLoginSetupPageProps) {
+export function PreLoginSetupPage({ onComplete, onStepChange, step }: IPreLoginSetupPageProps) {
   const { company, setCompany } = useOrganizationStore()
-  const [step, setStep] = useState(0)
   const [admins, setAdmins] = useState([{ email: '', name: '' }])
-  const StepIcon = SETUP_STEPS[step].icon
+  const safeStep = Math.max(0, Math.min(step, SETUP_STEPS.length - 1))
+  const StepIcon = SETUP_STEPS[safeStep].icon
   const form = useForm<CompanySchemaType>({
     defaultValues: company,
     mode: 'onChange',
@@ -59,14 +61,14 @@ export function PreLoginSetupPage({ onComplete }: IPreLoginSetupPageProps) {
       ['adminEmployees'],
     ]
 
-    if (step === 2) {
+    if (safeStep === 2) {
       completeSetup()
       return
     }
 
-    const valid = await form.trigger(fieldsByStep[step])
+    const valid = await form.trigger(fieldsByStep[safeStep])
     if (valid) {
-      setStep((current) => current + 1)
+      onStepChange(safeStep + 1)
     }
   }
 
@@ -130,22 +132,22 @@ export function PreLoginSetupPage({ onComplete }: IPreLoginSetupPageProps) {
             <SegmentedPills
               className="mb-5"
               items={SETUP_STEP_PILLS}
-              onValueChange={(value) => setStep(Number(value))}
-              value={String(step)}
+              onValueChange={(value) => onStepChange(Number(value))}
+              value={String(safeStep)}
             />
 
-            <motion.div animate={{ opacity: 1, y: 0 }} initial={{ opacity: 0, y: 10 }} key={step} transition={{ duration: 0.24 }}>
+            <motion.div animate={{ opacity: 1, y: 0 }} initial={{ opacity: 0, y: 10 }} key={safeStep} transition={{ duration: 0.24 }}>
               <span className="grid size-12 place-items-center rounded-2xl bg-[#eaf0ff] text-[#1e3fe3]">
                 <StepIcon className="size-6" />
               </span>
-              <p className="mt-4 text-xs font-black uppercase tracking-[0.16em] text-[#65708a]">{SETUP_STEPS[step].eyebrow}</p>
+              <p className="mt-4 text-xs font-black uppercase tracking-[0.16em] text-[#65708a]">{SETUP_STEPS[safeStep].eyebrow}</p>
               <h1 className="mt-1 max-w-xl text-4xl font-black leading-tight tracking-tight text-[#071126]">
-                {SETUP_STEPS[step].title}
+                {SETUP_STEPS[safeStep].title}
               </h1>
-              <p className="mt-3 max-w-xl text-base font-medium leading-7 text-[#65708a]">{SETUP_STEPS[step].helper}</p>
+              <p className="mt-3 max-w-xl text-base font-medium leading-7 text-[#65708a]">{SETUP_STEPS[safeStep].helper}</p>
 
               <form className="mt-6 grid gap-4 sm:grid-cols-2" onSubmit={(event) => event.preventDefault()}>
-                {step === 0 && (
+                {safeStep === 0 && (
                   <>
                     <SetupField error={form.formState.errors.firstName?.message} label="First name" registration={form.register('firstName')} />
                     <SetupField error={form.formState.errors.lastName?.message} label="Last name" registration={form.register('lastName')} />
@@ -161,7 +163,7 @@ export function PreLoginSetupPage({ onComplete }: IPreLoginSetupPageProps) {
                   </>
                 )}
 
-                {step === 1 && (
+                {safeStep === 1 && (
                   <>
                     <SetupField
                       error={form.formState.errors.companyWebsite?.message}
@@ -186,7 +188,7 @@ export function PreLoginSetupPage({ onComplete }: IPreLoginSetupPageProps) {
                   </>
                 )}
 
-                {step === 2 && (
+                {safeStep === 2 && (
                   <div className="space-y-3 sm:col-span-2">
                     {admins.map((admin, index) => (
                       <div className="grid gap-3 rounded-2xl border border-[#d8deea] bg-[#fbfcff] p-3 sm:grid-cols-[1fr_1fr_auto]" key={`admin-${index}`}>
@@ -225,16 +227,16 @@ export function PreLoginSetupPage({ onComplete }: IPreLoginSetupPageProps) {
                 )}
 
                 <div className="mt-1 flex flex-wrap items-center justify-between gap-3 border-t border-[#e6ebf4] pt-4 sm:col-span-2">
-                  <p className="text-sm font-extrabold text-[#65708a]">Step {step + 1} of 3</p>
+                  <p className="text-sm font-extrabold text-[#65708a]">Step {safeStep + 1} of 3</p>
                   <div className="flex items-center gap-3">
-                    {step > 0 && (
-                      <Button className="min-w-32" onClick={() => setStep((current) => current - 1)} type="button" variant="outline">
+                    {safeStep > 0 && (
+                      <Button className="min-w-32" onClick={() => onStepChange(safeStep - 1)} type="button" variant="outline">
                         <ArrowLeft className="size-4" />
                         Back
                       </Button>
                     )}
                     <Button className="min-w-40 bg-[#1e3fe3] text-white hover:bg-[#122b9e]" onClick={() => void goNext()} type="button">
-                      {step === 2 ? 'Continue' : 'Continue'}
+                      {safeStep === 2 ? 'Continue' : 'Continue'}
                       <ArrowRight className="size-4" />
                     </Button>
                   </div>
@@ -244,7 +246,7 @@ export function PreLoginSetupPage({ onComplete }: IPreLoginSetupPageProps) {
           </div>
         </section>
 
-        <SetupIllustration step={step} />
+        <SetupIllustration step={safeStep} />
       </div>
     </main>
   )

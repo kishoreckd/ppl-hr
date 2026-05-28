@@ -32,6 +32,7 @@ const NOTIFICATION_SETTINGS = [
 ] as const
 
 type NotificationKeyType = (typeof NOTIFICATION_SETTINGS)[number]['key']
+type AdminSettingKeyType = 'adminLeaveAlerts' | 'adminPolicyChangeEmails' | 'adminRegularizationAlerts'
 
 export function SettingsPage({ role }: ISettingsPageProps) {
   const [roles, setRoles] = useState(DEFAULT_ROLES)
@@ -45,6 +46,11 @@ export function SettingsPage({ role }: ISettingsPageProps) {
     pushNotifications: true,
     regularizationNotifications: true,
     swipeEmail: false,
+  })
+  const [adminSettings, setAdminSettings] = useState<Record<AdminSettingKeyType, boolean>>({
+    adminLeaveAlerts: true,
+    adminPolicyChangeEmails: true,
+    adminRegularizationAlerts: true,
   })
   const isAdmin = role === 'Admin'
 
@@ -115,6 +121,7 @@ export function SettingsPage({ role }: ISettingsPageProps) {
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={Boolean(selectedRoles[item])}
+                    disabled={!isAdmin}
                     onCheckedChange={(checked) => setSelectedRoles((current) => ({ ...current, [item]: checked }))}
                   />
                   {isAdmin && (
@@ -150,7 +157,12 @@ export function SettingsPage({ role }: ISettingsPageProps) {
                 </div>
                 <Switch
                   checked={notifications[setting.key]}
+                  disabled={!isAdmin}
                   onCheckedChange={(checked) => {
+                    if (!isAdmin) {
+                      toast.error('Only admin can update notification settings.')
+                      return
+                    }
                     setNotifications((current) => ({ ...current, [setting.key]: checked }))
                     toast.info(`${setting.label} ${checked ? 'enabled' : 'disabled'}.`)
                   }}
@@ -165,10 +177,20 @@ export function SettingsPage({ role }: ISettingsPageProps) {
             <p className="text-xs font-black uppercase tracking-[0.08em] text-[#5c6b8e]">Admin switches</p>
             <h2 className="text-2xl font-black tracking-[-0.03em] text-[#071126]">Policy notifications</h2>
             <div className="mt-4 grid gap-3">
-              {['Admin leave alerts', 'Admin regularization alerts', 'Admin policy change emails'].map((label) => (
-                <div className="flex items-center justify-between rounded-2xl border border-[#dce3f1] bg-white p-4" key={label}>
-                  <span className="text-sm font-extrabold text-[#071126]">{label}</span>
-                  <Switch checked onCheckedChange={() => toast.info(`${label} setting updated.`)} />
+              {[
+                { key: 'adminLeaveAlerts' as const, label: 'Admin leave alerts' },
+                { key: 'adminRegularizationAlerts' as const, label: 'Admin regularization alerts' },
+                { key: 'adminPolicyChangeEmails' as const, label: 'Admin policy change emails' },
+              ].map((setting) => (
+                <div className="flex items-center justify-between rounded-2xl border border-[#dce3f1] bg-white p-4" key={setting.label}>
+                  <span className="text-sm font-extrabold text-[#071126]">{setting.label}</span>
+                  <Switch
+                    checked={adminSettings[setting.key]}
+                    onCheckedChange={(checked) => {
+                      setAdminSettings((current) => ({ ...current, [setting.key]: checked }))
+                      toast.info(`${setting.label} ${checked ? 'enabled' : 'disabled'}.`)
+                    }}
+                  />
                 </div>
               ))}
             </div>
