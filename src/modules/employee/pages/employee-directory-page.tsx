@@ -1,4 +1,4 @@
-import { Plus, UsersRound } from 'lucide-react'
+import { Plus, Search, UsersRound } from 'lucide-react'
 import type { FormEvent } from 'react'
 import { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
@@ -28,6 +28,10 @@ export function EmployeeDirectoryPage() {
   const [manager, setManager] = useState('')
   const [role, setRole] = useState<EmployeeRoleType>('Employee')
   const [customRole, setCustomRole] = useState('')
+  const [query, setQuery] = useState('')
+  const [roleFilter, setRoleFilter] = useState('All')
+  const [departmentFilter, setDepartmentFilter] = useState('All')
+  const [managerFilter, setManagerFilter] = useState('All')
 
   const managerOptions = useMemo(
     () =>
@@ -35,6 +39,21 @@ export function EmployeeDirectoryPage() {
         new Set(employees.filter((employee) => employee.role === 'Manager' || employee.role === 'Admin').map((employee) => employee.name)),
       ),
     [employees],
+  )
+  const departmentOptions = useMemo(
+    () => Array.from(new Set(employees.map((employee) => employee.department))).sort(),
+    [employees],
+  )
+  const filteredEmployees = useMemo(
+    () =>
+      employees.filter((employee) => {
+        const matchesQuery = `${employee.name} ${employee.email}`.toLowerCase().includes(query.toLowerCase())
+        const matchesRole = roleFilter === 'All' || employee.role === roleFilter
+        const matchesDepartment = departmentFilter === 'All' || employee.department === departmentFilter
+        const matchesManager = managerFilter === 'All' || employee.manager === managerFilter
+        return matchesQuery && matchesRole && matchesDepartment && matchesManager
+      }),
+    [departmentFilter, employees, managerFilter, query, roleFilter],
   )
 
   function submitEmployee(event: FormEvent<HTMLFormElement>) {
@@ -130,6 +149,75 @@ export function EmployeeDirectoryPage() {
           </form>
 
           <div className="rounded-2xl border border-[#dce3f1] bg-white">
+            <div className="grid gap-2 border-b border-[#dce3f1] p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="relative min-w-56 flex-1 sm:max-w-xs">
+                  <Search className="pointer-events-none absolute left-3 top-3 size-4 text-[#5c6b8e]" />
+                  <Input
+                    aria-label="Search employees"
+                    className="h-10 rounded-full pl-9"
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Search by name or email"
+                    value={query}
+                  />
+                </label>
+                <Select onValueChange={setRoleFilter} value={roleFilter}>
+                  <SelectTrigger className="h-10 min-w-36">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All roles</SelectItem>
+                    {roles.map((roleOption) => (
+                      <SelectItem key={roleOption} value={roleOption}>
+                        {roleOption}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Select onValueChange={setDepartmentFilter} value={departmentFilter}>
+                  <SelectTrigger className="h-9 min-w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All departments</SelectItem>
+                    {departmentOptions.map((departmentOption) => (
+                      <SelectItem key={departmentOption} value={departmentOption}>
+                        {departmentOption}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select onValueChange={setManagerFilter} value={managerFilter}>
+                  <SelectTrigger className="h-9 min-w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">All managers</SelectItem>
+                    {managerOptions.map((managerOption) => (
+                      <SelectItem key={managerOption} value={managerOption}>
+                        {managerOption}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {(query || roleFilter !== 'All' || departmentFilter !== 'All' || managerFilter !== 'All') && (
+                  <Button
+                    className="min-h-9 px-3 text-xs"
+                    onClick={() => {
+                      setQuery('')
+                      setRoleFilter('All')
+                      setDepartmentFilter('All')
+                      setManagerFilter('All')
+                    }}
+                    variant="outline"
+                  >
+                    Clear all
+                  </Button>
+                )}
+              </div>
+            </div>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -137,10 +225,11 @@ export function EmployeeDirectoryPage() {
                   <TableHead>Role</TableHead>
                   <TableHead>Department</TableHead>
                   <TableHead>Manager</TableHead>
+                  <TableHead>Hierarchy tags</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {employees.map((employee) => (
+                {filteredEmployees.map((employee) => (
                   <TableRow key={employee.id}>
                     <TableCell>
                       <p className="font-black">{employee.name}</p>
@@ -153,10 +242,22 @@ export function EmployeeDirectoryPage() {
                     </TableCell>
                     <TableCell>{employee.department}</TableCell>
                     <TableCell>{employee.manager}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1.5">
+                        <Badge tone="neutral">BU: CXOntology</Badge>
+                        <Badge tone="neutral">Dept: {employee.department}</Badge>
+                        <Badge tone="neutral">Mgr: {employee.manager}</Badge>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+            {filteredEmployees.length === 0 && (
+              <div className="border-t border-[#dce3f1] px-4 py-8 text-center text-sm font-semibold text-[#5c6b8e]">
+                No employees found for the current filters.
+              </div>
+            )}
           </div>
         </div>
 

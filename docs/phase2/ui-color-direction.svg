@@ -1,0 +1,75 @@
+<svg width="1200" height="720" viewBox="0 0 1200 720" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="720" fill="#F2F5FB"/>
+  <rect x="60" y="54" width="1080" height="612" rx="24" fill="#FFFFFF" stroke="#DCE3F1" stroke-width="2"/>
+
+  <text x="92" y="116" fill="#071126" font-family="Manrope, Arial, sans-serif" font-size="34" font-weight="800">
+    PPL-HR Phase 2 UI Color Direction
+  </text>
+  <text x="92" y="150" fill="#5C6B8E" font-family="Manrope, Arial, sans-serif" font-size="18" font-weight="600">
+    Balanced enterprise palette for dashboards, forms, and workflow actions.
+  </text>
+
+  <g transform="translate(92,190)">
+    <rect width="186" height="104" rx="16" fill="#1E3FE3"/>
+    <text x="18" y="36" fill="#FFFFFF" font-family="Manrope, Arial, sans-serif" font-size="16" font-weight="800">Primary Brand</text>
+    <text x="18" y="66" fill="#EAF0FF" font-family="Manrope, Arial, sans-serif" font-size="16" font-weight="600">#1E3FE3</text>
+  </g>
+
+  <g transform="translate(296,190)">
+    <rect width="186" height="104" rx="16" fill="#071126"/>
+    <text x="18" y="36" fill="#FFFFFF" font-family="Manrope, Arial, sans-serif" font-size="16" font-weight="800">Primary Text</text>
+    <text x="18" y="66" fill="#C6D0E6" font-family="Manrope, Arial, sans-serif" font-size="16" font-weight="600">#071126</text>
+  </g>
+
+  <g transform="translate(500,190)">
+    <rect width="186" height="104" rx="16" fill="#5C6B8E"/>
+    <text x="18" y="36" fill="#FFFFFF" font-family="Manrope, Arial, sans-serif" font-size="16" font-weight="800">Secondary Text</text>
+    <text x="18" y="66" fill="#E5ECFB" font-family="Manrope, Arial, sans-serif" font-size="16" font-weight="600">#5C6B8E</text>
+  </g>
+
+  <g transform="translate(704,190)">
+    <rect width="186" height="104" rx="16" fill="#DCE3F1"/>
+    <text x="18" y="36" fill="#071126" font-family="Manrope, Arial, sans-serif" font-size="16" font-weight="800">Border</text>
+    <text x="18" y="66" fill="#3F5178" font-family="Manrope, Arial, sans-serif" font-size="16" font-weight="600">#DCE3F1</text>
+  </g>
+
+  <g transform="translate(908,190)">
+    <rect width="186" height="104" rx="16" fill="#F2F5FB" stroke="#DCE3F1" stroke-width="2"/>
+    <text x="18" y="36" fill="#071126" font-family="Manrope, Arial, sans-serif" font-size="16" font-weight="800">Background</text>
+    <text x="18" y="66" fill="#3F5178" font-family="Manrope, Arial, sans-serif" font-size="16" font-weight="600">#F2F5FB</text>
+  </g>
+
+  <g transform="translate(92,326)">
+    <rect width="186" height="96" rx="16" fill="#15B98D"/>
+    <text x="18" y="36" fill="#FFFFFF" font-family="Manrope, Arial, sans-serif" font-size="16" font-weight="800">Success Accent</text>
+    <text x="18" y="64" fill="#D8FFF3" font-family="Manrope, Arial, sans-serif" font-size="15" font-weight="600">#15B98D</text>
+  </g>
+
+  <g transform="translate(296,326)">
+    <rect width="186" height="96" rx="16" fill="#D48A1C"/>
+    <text x="18" y="36" fill="#FFFFFF" font-family="Manrope, Arial, sans-serif" font-size="16" font-weight="800">Warning Amber</text>
+    <text x="18" y="64" fill="#FFF2DA" font-family="Manrope, Arial, sans-serif" font-size="15" font-weight="600">#D48A1C</text>
+  </g>
+
+  <g transform="translate(500,326)">
+    <rect width="186" height="96" rx="16" fill="#D8475A"/>
+    <text x="18" y="36" fill="#FFFFFF" font-family="Manrope, Arial, sans-serif" font-size="16" font-weight="800">Error Red</text>
+    <text x="18" y="64" fill="#FFE4E8" font-family="Manrope, Arial, sans-serif" font-size="15" font-weight="600">#D8475A</text>
+  </g>
+
+  <g transform="translate(92,466)">
+    <rect width="1002" height="160" rx="16" fill="#F8FAFF" stroke="#DCE3F1" stroke-width="2"/>
+    <text x="24" y="46" fill="#071126" font-family="Manrope, Arial, sans-serif" font-size="20" font-weight="800">
+      Usage guidance
+    </text>
+    <text x="24" y="78" fill="#5C6B8E" font-family="Manrope, Arial, sans-serif" font-size="16" font-weight="600">
+      • Keep primary actions in #1E3FE3 and reserve green for success states only.
+    </text>
+    <text x="24" y="106" fill="#5C6B8E" font-family="Manrope, Arial, sans-serif" font-size="16" font-weight="600">
+      • Use #F2F5FB + white surfaces to avoid noisy backgrounds and improve table readability.
+    </text>
+    <text x="24" y="134" fill="#5C6B8E" font-family="Manrope, Arial, sans-serif" font-size="16" font-weight="600">
+      • Keep warnings/errors semantic: amber for hold/pending risk, red for blockers or failed actions.
+    </text>
+  </g>
+</svg>

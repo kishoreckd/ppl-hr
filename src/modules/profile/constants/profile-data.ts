@@ -20,6 +20,23 @@ export function buildProfile(user: IAuthUser): IEmployeeProfile {
       phone: '',
       workLocation: '',
     },
+    documents:
+      user.role === 'Employee'
+        ? []
+        : [
+            {
+              category: 'Identity',
+              lastUpdated: '2026-05-22',
+              title: 'Government ID metadata',
+              visibility: user.role === 'Admin' ? 'Admin' : 'Manager',
+            },
+            {
+              category: 'Compliance',
+              lastUpdated: '2026-05-19',
+              title: 'Signed policy acknowledgement',
+              visibility: 'Restricted',
+            },
+          ],
     employment: {
       businessUnit: 'CXOntology',
       department: user.role === 'Admin' ? 'People Operations' : 'Product Engineering',

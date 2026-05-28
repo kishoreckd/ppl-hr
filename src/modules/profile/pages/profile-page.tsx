@@ -18,6 +18,7 @@ import { Input } from '../../../shared/components/ui/input'
 import { Label } from '../../../shared/components/ui/label'
 import { SegmentedPills } from '../../../shared/components/ui/segmented-pills'
 import { Skeleton } from '../../../shared/components/ui/skeleton'
+import { Textarea } from '../../../shared/components/ui/textarea'
 import type { IAuthUser } from '../../auth/types/auth-types'
 import { ProfileFieldGrid } from '../components/profile-field-grid'
 import { ProfileSectionCard } from '../components/profile-section-card'
@@ -34,10 +35,11 @@ import {
   type ProfileOverviewSchemaType,
 } from '../validations/profile-schema'
 
-const PROFILE_SECTIONS: Array<{ label: string; value: ProfileSectionType }> = [
+const BASE_PROFILE_SECTIONS: Array<{ label: string; value: ProfileSectionType }> = [
   { label: 'Overview', value: 'overview' },
   { label: 'Contact', value: 'contact' },
   { label: 'Interests', value: 'interests' },
+  { label: 'Documents', value: 'documents' },
 ]
 
 export function ProfilePage({ user }: { user: IAuthUser }) {
@@ -48,8 +50,12 @@ export function ProfilePage({ user }: { user: IAuthUser }) {
     return <ProfilePageSkeleton />
   }
 
+  const sections =
+    user.role === 'Employee'
+      ? BASE_PROFILE_SECTIONS.filter((section) => section.value !== 'documents')
+      : BASE_PROFILE_SECTIONS
   const displayName = formatDisplayName(profile.user.name)
-  const currentSection = PROFILE_SECTIONS.some((section) => section.value === activeSection) ? activeSection : 'overview'
+  const currentSection = sections.some((section) => section.value === activeSection) ? activeSection : 'overview'
 
   return (
     <div className="space-y-4">
@@ -103,7 +109,7 @@ export function ProfilePage({ user }: { user: IAuthUser }) {
         </div>
       </Card>
 
-      <SegmentedPills items={PROFILE_SECTIONS} onValueChange={setActiveSection} value={currentSection} />
+      <SegmentedPills items={sections} onValueChange={setActiveSection} value={currentSection} />
 
       <motion.div
         animate={{ opacity: 1, y: 0 }}
@@ -143,6 +149,10 @@ export function ProfilePage({ user }: { user: IAuthUser }) {
 
         {currentSection === 'interests' && (
           <ProfileInterestsForm profile={profile} />
+        )}
+
+        {currentSection === 'documents' && (
+          <ProfileDocumentsSection profile={profile} role={user.role} />
         )}
       </motion.div>
     </div>
@@ -272,6 +282,44 @@ function ProfileInterestsForm({ profile }: { profile: IEmployeeProfile }) {
   )
 }
 
+function ProfileDocumentsSection({
+  profile,
+  role,
+}: {
+  profile: IEmployeeProfile
+  role: IAuthUser['role']
+}) {
+  const canViewDocuments = role === 'Admin' || role === 'Manager'
+
+  return (
+    <ProfileSectionCard eyebrow="Document metadata" title="Profile documents">
+      {!canViewDocuments ? (
+        <div className="rounded-md border border-dashed border-[#021333]/15 bg-[#f6f8ff] p-4 text-sm font-semibold text-[#5c6b8e]">
+          Document metadata is visible to manager and admin roles only.
+        </div>
+      ) : profile.documents.length ? (
+        <div className="space-y-2">
+          {profile.documents.map((document) => (
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[#021333]/10 bg-white p-3" key={document.title}>
+              <div>
+                <p className="text-sm font-black text-[#021333]">{document.title}</p>
+                <p className="text-xs font-semibold text-[#5c6b8e]">
+                  {document.category} | Updated {document.lastUpdated}
+                </p>
+              </div>
+              <Badge tone={document.visibility === 'Restricted' ? 'warning' : 'neutral'}>{document.visibility}</Badge>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-md border border-dashed border-[#021333]/15 bg-[#f6f8ff] p-4 text-sm font-semibold text-[#5c6b8e]">
+          No document metadata added for this employee.
+        </div>
+      )}
+    </ProfileSectionCard>
+  )
+}
+
 function ProfileInput({
   error,
   label,
@@ -304,9 +352,9 @@ function ProfileTextArea({
   return (
     <Label>
       {label}
-      <textarea
+      <Textarea
         aria-invalid={Boolean(error)}
-        className="mt-1 min-h-28 w-full rounded-md border border-[#021333]/15 bg-white px-3 py-2 text-sm text-[#021333] outline-none transition placeholder:text-[#5c6b8e]/55 focus:border-[#1e3fe3] focus:ring-2 focus:ring-[#1e3fe3]/15"
+        className="mt-1 min-h-28"
         placeholder={placeholder}
         {...register}
       />

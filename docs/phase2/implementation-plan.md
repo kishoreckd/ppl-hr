@@ -1,6 +1,6 @@
 # PPL-HR Phase 2 Implementation Plan
 
-Last updated: 2026-05-27
+Last updated: 2026-05-28
 
 ## Phase objective
 
@@ -48,3 +48,16 @@ Expand people operations and attendance workflows into full employee lifecycle a
 - Profile surface consistency
 - Team-attendance and regularization review maturity
 - Role-accurate navigation behavior
+
+## Completion checklist
+
+- Employee directory supports list filters and role mapping add flow
+- Employee profile includes role-aware optional document metadata visibility
+- Team attendance supports exception, late-login, and pending-action focus controls
+- Regularization manager workbench supports bulk actions and notes-first review
+- Build and lint passing
+
+## Reference docs
+
+- [Phase 2 Completion Audit](./completion-audit.md)
+- [Phase 2 UI Color Direction](./ui-color-direction.md)
