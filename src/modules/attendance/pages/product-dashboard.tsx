@@ -70,36 +70,41 @@ export function ProductDashboard({ name, onPage, role }: IProductDashboardProps)
 
   return (
     <div className="space-y-4">
-      <section className="grid gap-4 xl:grid-cols-[1.35fr_0.65fr]">
+      <section className="grid gap-4 xl:grid-cols-[1.42fr_0.58fr]">
         <Card className="overflow-hidden border-[#dce3f1] shadow-[0_18px_48px_rgba(7,17,38,0.08)]">
-          <div className="relative min-h-[17rem] overflow-hidden">
+          <div className="relative overflow-hidden">
             <img alt="Dashboard backdrop" className="absolute inset-0 h-full w-full object-cover opacity-45" src={heroImage} />
-            <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.9),rgba(241,246,255,0.72))]" />
+            <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.94),rgba(241,246,255,0.8))]" />
             <div className="relative z-10 p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-4xl font-black tracking-[-0.03em] text-[#021333]">Hello {name}</h2>
+                  <h2 className="text-3xl font-black tracking-[-0.03em] text-[#021333] sm:text-4xl">Hello {name}</h2>
                   <p className="mt-1 text-sm font-semibold text-[#5c6b8e]">Log hours</p>
                 </div>
                 <AttendancePunchAction />
               </div>
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+              <div className="mt-5 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
                 <div>
                   <p className="text-sm font-black uppercase tracking-[0.05em] text-[#5c6b8e]">Hours today</p>
                   <p className="mt-1 text-3xl font-black text-[#021333]">{formatMinutes(workedMinutes)}</p>
                   <p className="mt-2 text-sm font-semibold text-[#5c6b8e]">Recent swipes</p>
                 </div>
-                <div className="grid size-40 place-items-center rounded-[2rem] border-[4px] border-[#021333]/35 bg-white/90 text-5xl font-black text-[#021333] shadow-[0_14px_30px_rgba(7,17,38,0.16)]">
-                  {getClockLabel(new Date().toISOString())}
+                <div className="grid h-48 w-56 place-items-center rounded-[2rem] border-[4px] border-[#021333]/35 bg-white/90 px-4 text-6xl font-black leading-none text-[#021333] shadow-[0_14px_30px_rgba(7,17,38,0.16)]">
+                  <span className="whitespace-nowrap tabular-nums">{getDigitalClock()}</span>
                 </div>
               </div>
 
-              <div className="mt-4 max-h-[12.5rem] space-y-2 overflow-y-auto pr-1">
+              <div className="mt-4 rounded-xl border border-[#d7e0f3] bg-white/85">
+                <div className="flex items-center justify-between border-b border-[#d7e0f3] px-3 py-2">
+                  <p className="text-xs font-black uppercase tracking-[0.06em] text-[#5c6b8e]">Recent swipes</p>
+                  <p className="text-xs font-semibold text-[#5c6b8e]">{recentPunches.length} entries</p>
+                </div>
+                <div className="max-h-[10rem] space-y-2 overflow-y-auto p-2">
                 {recentPunches.length ? (
                   recentPunches.map((punch, index) => (
                     <div
-                      className="flex items-center justify-between rounded-lg border border-[#dce3f1] bg-white/90 px-3 py-2"
+                      className="flex items-center justify-between rounded-lg border border-[#dce3f1] bg-white px-3 py-2"
                       key={`${punch.occurredAt}-${index}`}
                     >
                       <span className="inline-flex items-center gap-2 text-sm font-bold text-[#021333]">
@@ -116,10 +121,11 @@ export function ProductDashboard({ name, onPage, role }: IProductDashboardProps)
                     </div>
                   ))
                 ) : (
-                  <div className="rounded-lg border border-dashed border-[#c9d4ee] bg-white/80 px-3 py-3 text-sm font-semibold text-[#5c6b8e]">
+                  <div className="grid h-20 place-items-center rounded-lg border border-dashed border-[#c9d4ee] bg-white px-3 py-3 text-sm font-semibold text-[#5c6b8e]">
                     No swipe activity yet.
                   </div>
                 )}
+                </div>
               </div>
             </div>
           </div>
@@ -298,4 +304,12 @@ function ProductDashboardSkeleton() {
       </div>
     </div>
   )
+}
+
+function getDigitalClock() {
+  return new Intl.DateTimeFormat('en-IN', {
+    hour: '2-digit',
+    hour12: false,
+    minute: '2-digit',
+  }).format(new Date())
 }
