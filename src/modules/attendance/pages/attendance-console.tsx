@@ -219,12 +219,12 @@ function ConsolePage({
   }
 
   if (activePage === 'team-attendance') {
-    return managerView ? <TeamAttendancePage /> : <ProductDashboard onPage={onPage} role={role} />
+    return managerView ? <TeamAttendancePage /> : <ProductDashboard name={name} onPage={onPage} role={role} />
   }
 
   if (activePage === 'team-calendar') {
     return managerView ? <TeamCalendarPage /> : <EmployeeCalendarPage />
   }
 
-  return <ProductDashboard onPage={onPage} role={role} />
+  return <ProductDashboard name={name} onPage={onPage} role={role} />
 }
